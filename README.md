@@ -96,6 +96,239 @@ Since the application runs entirely client-side using native modern JS, you can 
 
 ---
 
+## 🔄 Workflow Diagrams
+
+### 1. Overall System Architecture
+
+How real-world stadium data flows through the 10 MCP servers into the AI Super Agent and out to users.
+
+```mermaid
+flowchart TD
+    subgraph SENSORS["📡 Live Stadium Feeds"]
+        S1[CCTV Cameras]
+        S2[Gate Sensors]
+        S3[Weather Stations]
+        S4[GPS Player Trackers]
+        S5[Ticketing System]
+    end
+
+    subgraph MCP["🖥️ MCP Server Network"]
+        M1[Stadium Digital Twin MCP]
+        M2[Vision AI / YOLOv11 MCP]
+        M3[FIFA Statistics MCP]
+        M4[Transport MCP]
+        M5[Weather MCP]
+        M6[Merchandise MCP]
+        M7[Accessibility MCP]
+        M8[Translation MCP]
+        M9[Emergency MCP]
+    end
+
+    subgraph AGENT["🤖 FIFA Super Agent LLM"]
+        A1[Intent Classifier]
+        A2[MCP Tool Orchestrator]
+        A3[Reasoning & Synthesis]
+        A4[Response Generator]
+    end
+
+    subgraph OUTPUT["📲 Output Channels"]
+        O1[Fan AI Chat Interface]
+        O2[Staff Operations Console]
+        O3[Dynamic Seat Marketplace]
+        O4[Live Stadium SVG Map]
+        O5[Fan Memory Certificate]
+    end
+
+    S1 --> M2
+    S2 --> M1
+    S3 --> M5
+    S4 --> M2
+    S5 --> M1
+
+    M1 & M2 & M3 & M4 & M5 & M6 & M7 & M8 & M9 --> A2
+
+    A1 --> A2
+    A2 --> A3
+    A3 --> A4
+
+    A4 --> O1
+    A4 --> O2
+    A4 --> O3
+    A4 --> O4
+    A4 --> O5
+```
+
+---
+
+### 2. LLM Query Processing Pipeline
+
+How a user's natural language query is parsed, routed, and responded to by the Super Agent.
+
+```mermaid
+sequenceDiagram
+    actor Fan
+    participant Chat as AI Chat UI
+    participant Agent as FIFA Super Agent
+    participant Classifier as Intent Classifier
+    participant MCPs as MCP Server Network
+    participant Terminal as MCP Log Console
+
+    Fan->>Chat: Types a question (e.g. "Messi autograph probability?")
+    Chat->>Agent: sendChatMessage(query, role, currentSeat)
+    Agent->>Classifier: Keyword extraction on lowercaseQuery
+    Classifier-->>Agent: Intent = "Autograph / Selfie Query"
+
+    Agent->>Terminal: [LOG] NEW LLM INQUIRY RECEIVED
+    Agent->>MCPs: call FIFA Stats MCP → get_celebration_locations()
+    MCPs-->>Terminal: [LOG] Response returned
+    Agent->>MCPs: call Vision MCP → get_live_player_locations()
+    MCPs-->>Terminal: [LOG] Response returned
+    Agent->>MCPs: call Stadium Digital Twin MCP → get_section_proximity()
+    MCPs-->>Terminal: [LOG] Queries completed. Processing LLM reasoning...
+
+    Agent->>Agent: Synthesize all MCP payloads
+    Agent-->>Chat: Markdown response with recommendation
+    Chat-->>Fan: Rendered AI message + upgrade suggestion
+```
+
+---
+
+### 3. Fan Seat Upgrade Flow
+
+The end-to-end journey when a fan requests a seat upgrade from the Marketplace.
+
+```mermaid
+flowchart TD
+    A([Fan opens Seat Upgrades tab]) --> B{Selects upgrade card\nor stadium section}
+    B --> C[initiateSeatUpgrade called\nwith targetSecId + price]
+    C --> D[Checkout Modal opens\nshowing seat details & cost]
+    D --> E{Fan confirms\npayment?}
+    E -- No --> F([Modal closed, no change])
+    E -- Yes --> G[completeSeatUpgrade triggered]
+    G --> H[Wallet ticket updated\nin the header HUD]
+    G --> I[Stadium SVG section\nhighlighted as active]
+    G --> J[Seat detail panel\nreflects new section data]
+    G --> K[AI Chat logs\nupgrade confirmation]
+    H & I & J & K --> L([Fan is now in new seat 🎉])
+```
+
+---
+
+### 4. Staff Incident Response Flow
+
+How the operations staff detects, dispatches, and resolves a crowd-safety incident.
+
+```mermaid
+flowchart TD
+    A([Staff toggles to Staff Mode]) --> B[CCTV YOLO Canvas activates\noperations console appears]
+    B --> C{Incident type?}
+
+    C -- Manual | Crowd Surge --> D["Simulate Section 211 Surge"\nbutton clicked]
+    C -- Rain Detected --> E[Weather MCP registers\nwind & rain telemetry]
+    C -- Medical Alert --> F[Emergency MCP raises\nmedical incident flag]
+
+    D --> G[triggerSimulatedIncident called]
+    E --> G
+    F --> G
+
+    G --> H[SVG section turns red\nand pulses warning]
+    G --> I[Live ticker banner\ndisplays critical alert]
+    G --> J[Dispatch panel adds\nnew incident card]
+
+    J --> K{Staff selects\nresolve action}
+    K -- Deploy Security Volunteers --> L[resolveDispatch called]
+    K -- Re-route signage --> L
+
+    L --> M[Crowd density metrics\nreturn to safe values]
+    L --> N[Incident card cleared\nfrom Dispatch panel]
+    M & N --> O([Incident resolved ✅])
+```
+
+---
+
+### 5. Real-Time Experience Score Computation
+
+How AuraAI computes the dynamic Experience Score (0–100) for each stadium seat.
+
+```mermaid
+flowchart LR
+    subgraph INPUTS["Raw Telemetry Inputs"]
+        I1[Player Location\nVision MCP]
+        I2[Crowd Density\nDigital Twin MCP]
+        I3[Weather Conditions\nWeather MCP]
+        I4[Celebration History\nFIFA Stats MCP]
+        I5[Vendor Queue Length\nVision MCP]
+        I6[Fan Community Density\nDigital Twin MCP]
+    end
+
+    subgraph METRICS["Per-Seat Metric Scores"]
+        M1[selfieScore]
+        M2[jerseyProb]
+        M3[chantEnergy]
+        M4[broadcastScore]
+        M5[shadeComfort]
+        M6[exitEvac]
+    end
+
+    subgraph OUTPUT["Experience Score"]
+        E["overallAura\n(0–100)"]
+    end
+
+    I1 --> M1 & M2
+    I2 --> M3 & M6
+    I3 --> M5
+    I4 --> M2 & M3
+    I5 --> M6
+    I6 --> M3
+
+    M1 & M2 & M3 & M4 & M5 & M6 --> E
+    E --> R["computeExperienceScore\nweighted average\nvia app.js"]
+    R --> D["SVG seat color\nupdated on map overlay"]
+```
+
+---
+
+### 6. MCP Tool Call Waterfall
+
+The precise order in which the Super Agent calls MCP servers for each query type.
+
+```mermaid
+gantt
+    title MCP Tool Call Waterfall (per Query Intent)
+    dateFormat  X
+    axisFormat  %L ms
+
+    section Autograph / Selfie Query
+    FIFA Stats MCP → get_celebration_locations()    :a1, 0, 300
+    Vision MCP → get_live_player_locations()        :a2, 300, 600
+    Digital Twin MCP → get_section_proximity()      :a3, 600, 900
+    LLM Reasoning & Response                        :a4, 900, 1200
+
+    section Food & Queue Query
+    Vision MCP → get_live_vendor_queues()           :b1, 0, 300
+    Digital Twin MCP → get_closest_vendors()        :b2, 300, 600
+    LLM Reasoning & Response                        :b3, 600, 900
+
+    section Transport / Exit Query
+    Transport MCP → get_transit_status()            :c1, 0, 300
+    Digital Twin MCP → get_gate_flow_metrics()      :c2, 300, 600
+    Emergency MCP → get_evacuation_routes()         :c3, 600, 900
+    LLM Reasoning & Response                        :c4, 900, 1200
+
+    section Fan Community Query
+    Digital Twin MCP → get_fan_distribution_zones() :d1, 0, 300
+    Accessibility MCP → verify_group_seat_adjacency():d2, 300, 600
+    LLM Reasoning & Response                         :d3, 600, 900
+
+    section Staff Ops Query
+    Emergency MCP → get_security_incidents()        :e1, 0, 300
+    Digital Twin MCP → get_congestion_hotspots()    :e2, 300, 600
+    Vision MCP → yolo_detect_crowd_anomalies()      :e3, 600, 900
+    LLM Reasoning & Response                        :e4, 900, 1200
+```
+
+---
+
 ## 🎮 Interactive Scenarios to Test
 
 ### Scenario A: The Autograph Hunter (Fan Mode)
