@@ -94,6 +94,7 @@
               <span class="map-mode-label">Overlay:</span>
               <div class="toggle-pill-group" id="overlayToggles">
                 <button class="pill-btn active" data-metric="experience" onclick="changeOverlay('experience')">Overall Aura</button>
+                <button class="pill-btn" data-metric="community" onclick="changeOverlay('community')">Fan Community</button>
                 <button class="pill-btn" data-metric="jersey" onclick="changeOverlay('jersey')">Jersey Toss</button>
                 <button class="pill-btn" data-metric="selfie" onclick="changeOverlay('selfie')">Selfie Zone</button>
                 <button class="pill-btn" data-metric="celebration" onclick="changeOverlay('celebration')">Goal Celebration</button>
@@ -276,9 +277,15 @@
                 <span class="seat-category" id="seatCategory">Category 1 (Lower Pitchside)</span>
                 <h3 class="seat-section-title" id="seatSectionTitle">Section 101</h3>
               </div>
-              <div class="aura-score-badge">
-                <span class="aura-score-label">Aura Score</span>
-                <span class="aura-score-value" id="seatAuraScore">92</span>
+              <div style="display: flex; gap: 10px;">
+                <div class="community-density-badge" id="seatCommunityBadge" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 8px 12px; border-radius: 12px; text-align: center;">
+                  <span class="community-label" style="display: block; font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Community</span>
+                  <span class="community-value" id="seatCommunityVal" style="font-family: var(--font-title); font-size: 13px; font-weight: 800; color: var(--secondary);">Neutral</span>
+                </div>
+                <div class="aura-score-badge">
+                  <span class="aura-score-label">Aura Score</span>
+                  <span class="aura-score-value" id="seatAuraScore">92</span>
+                </div>
               </div>
             </div>
 
@@ -487,6 +494,33 @@
               </div>
 
               <div class="upgrade-list" id="upgradeList">
+                <!-- Community Seating Upgrade Card -->
+                <div class="upgrade-card" onclick="selectSectionFromMarket('sec-111')" style="border: 1px dashed rgba(6, 182, 212, 0.6); background: rgba(6, 182, 212, 0.03);">
+                  <div class="upgrade-card-header">
+                    <div>
+                      <span class="badge badge-cyan"><i class="fa-solid fa-users"></i> Fan Community Swap</span>
+                      <h4>Section 111 - Argentina Supporter Core</h4>
+                    </div>
+                    <div class="upgrade-cost">+$35</div>
+                  </div>
+                  <p style="font-size: 11px; margin-top: -6px; color: var(--text-muted);">Join 3 fellow Albiceleste fans! Active sit-together seat swap is open.</p>
+                  <div class="upgrade-comparison">
+                    <div class="comp-item">
+                      <span>Community Density</span>
+                      <strong class="text-green">95% Argentina <i class="fa-solid fa-people-group"></i></strong>
+                    </div>
+                    <div class="comp-item">
+                      <span>Chant Volume</span>
+                      <strong class="text-pink">112+ dB (Peak)</strong>
+                    </div>
+                    <div class="comp-item">
+                      <span>Overall Aura</span>
+                      <strong class="text-cyan">94/100</strong>
+                    </div>
+                  </div>
+                  <button class="btn btn-sm btn-primary" onclick="initiateSeatUpgrade('sec-111', 35, 'Section 111')">Sit with Community</button>
+                </div>
+
                 <!-- Upgrade Card 1 -->
                 <div class="upgrade-card" onclick="selectSectionFromMarket('sec-110')">
                   <div class="upgrade-card-header">

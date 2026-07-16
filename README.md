@@ -18,9 +18,10 @@ Traditional stadium ticketing treats seats as static items priced primarily by s
 
 ### The Solution
 FIFA AuraAI processes real-time feed telemetry from across the stadium. It aggregates this data using a **Model Context Protocol (MCP)** server architecture and feeds it into a **Generative AI Super Agent**. The Super Agent evaluates seat locations dynamically, enabling:
-1. **Experience Overlays:** Live maps displaying probabilities for selfie zones, jersey tosses, weather shielding, and evacuations.
-2. **Dynamic Seating Marketplace:** Instant seat upgrades offered to fans based on live match triggers (e.g. players warming up near a corner flag).
-3. **Operational Intelligence:** Tools for organizers to monitor crowd density using YOLOv11 CCTV detectors, manage accessibility incidents, and dispatch volunteers.
+1. **Experience Overlays:** Live maps displaying probabilities for selfie zones, jersey tosses, weather shielding, and supporter concentrations.
+2. **Dynamic Seating Marketplace:** Instant seat upgrades offered to fans based on live match triggers.
+3. **Fan Community & Sit-Together Swaps:** Allows fans supporting the same team to find supporter concentrations (e.g. Section 111 Albiceleste Core) and trigger seat swaps to sit together.
+4. **Operational Intelligence:** Tools for organizers to monitor crowd density using YOLOv11 CCTV detectors, manage accessibility incidents, and dispatch volunteers.
 
 ---
 
@@ -119,3 +120,15 @@ Since the application runs entirely client-side using native modern JS, you can 
 2. Watch the **Weather MCP** register wind changes.
 3. The map automatically shifts to the **Shade Comfort Overlay**, darkening exposed seats (East stands) and highlighting roof-protected sections.
 4. Ask the AI Chat: *"Should I move my seat due to the weather?"* and watch the LLM reason over the dry zones to propose a comfortable alternative.
+
+### Scenario D: Seating with the Supporter Community (Fan Mode)
+1. Toggle the stadium map overlay to **Fan Community**.
+   * *Notice the South Stand goal sections turn sky blue, representing the Argentina supporters wall (88%-95% Albiceleste concentration).*
+   * *The North Stand goal sections turn pink/magenta, representing the France supporters wall (85%-90% Les Bleus).*
+2. Open the **Seat Upgrades** tab on the right. Notice the special dashed-border upgrade card: **Fan Community Swap (Section 111)**.
+3. Ask the AI Chat: *"Can I swap my ticket to sit together with other Argentina fans?"*
+   * *Watch the MCP Console fetch distribution zones and verify vacancy adjacency: `[CALLING Stadium Digital Twin MCP] -> get_fan_distribution_zones()`.*
+   * *The AI Concierge details the supporter walls and advises upgrading to Section 111.*
+4. Select Section 111 on the map or click **Sit with Community** on the upgrade card. Confirm and pay.
+5. Check your seat details again—your community density indicator now reads **Albiceleste Heart (95% Argentina Supporters)**!
+6. Generate a certificate under the **Fan Memory** tab. Note that the system automatically shifts the narrative to match the Albiceleste supporter crowd context.

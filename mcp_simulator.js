@@ -23,6 +23,7 @@ const mcpDatabase = {
         broadcastScore: 60, 
         shadeComfort: 90, 
         exitEvac: 85,
+        communityDensity: { team: "Neutral (Mixed)", ratio: "50/50", label: "Mixed Fans" },
         reasoning: "Excellent selfie and autograph probabilities as the player benches are located directly in front. With Argentina attacking this side in the 2nd half, goal celebrations are likely to peak here. Roof canopy provides solid afternoon shade cover."
       },
       "sec-102": { 
@@ -37,6 +38,7 @@ const mcpDatabase = {
         broadcastScore: 92, 
         shadeComfort: 92, 
         exitEvac: 83,
+        communityDensity: { team: "Neutral (Corporate)", ratio: "60/40", label: "Neutral" },
         reasoning: "Perfect center-line camera visibility. High probability of appearing on international TV broadcasts. Close to VIP boxes and central entryways, but slightly further from corner-flag celebration hotspots."
       },
       "sec-103": { 
@@ -51,6 +53,7 @@ const mcpDatabase = {
         broadcastScore: 85, 
         shadeComfort: 40, 
         exitEvac: 88,
+        communityDensity: { team: "Neutral (Sponsors)", ratio: "70/30", label: "Sponsor Zone" },
         reasoning: "Direct pitch view on the East side. Currently exposed to late afternoon sun glare (low shade comfort). Moderate autograph/selfie score, but offers extremely rapid exit routes directly to Gate 2."
       },
       "sec-104": { 
@@ -65,6 +68,7 @@ const mcpDatabase = {
         broadcastScore: 82, 
         shadeComfort: 45, 
         exitEvac: 88,
+        communityDensity: { team: "Neutral (Mixed)", ratio: "55/45", label: "Mixed Fans" },
         reasoning: "Located right next to Section 103. Slightly better shadow shelter as the stadium angle shifts. Excellent proximity to the East Side Merchandise Megastore, featuring low queue delays."
       },
       "sec-110": { 
@@ -79,6 +83,7 @@ const mcpDatabase = {
         broadcastScore: 50, 
         shadeComfort: 80, 
         exitEvac: 78,
+        communityDensity: { team: "Argentina", ratio: "88%", label: "Albiceleste Wall" },
         reasoning: "Located right behind the South Goal. Perfect view of penalty dynamics. Experience score boosted (+42%) by Argentina fans chanting intensely, creating an electric, highly contagious atmosphere."
       },
       "sec-111": { 
@@ -93,6 +98,7 @@ const mcpDatabase = {
         broadcastScore: 45, 
         shadeComfort: 82, 
         exitEvac: 75,
+        communityDensity: { team: "Argentina", ratio: "95%", label: "Albiceleste Heart" },
         reasoning: "The heartbeat of the South Stand supporters. Chant levels are deafening (112+ dB). Extreme high probability of jersey tosses and post-goal player runs to the crowd corner."
       },
       "sec-112": { 
@@ -107,6 +113,7 @@ const mcpDatabase = {
         broadcastScore: 40, 
         shadeComfort: 85, 
         exitEvac: 80,
+        communityDensity: { team: "Argentina", ratio: "82%", label: "Albiceleste Corner" },
         reasoning: "Positioned directly beside the corner flag. High chance of capturing corner kick drama and player slides. Tunnel A is in close view, offering accessibility ramps."
       },
       "sec-120": { 
@@ -121,6 +128,7 @@ const mcpDatabase = {
         broadcastScore: 40, 
         shadeComfort: 80, 
         exitEvac: 82,
+        communityDensity: { team: "France", ratio: "85%", label: "Les Bleus Corner" },
         reasoning: "North Stand corner flag view. Excellent view of France's defensive setup. Currently experiences a lighter crowd density, allowing quick vendor queue accesses."
       },
       "sec-121": { 
@@ -135,6 +143,7 @@ const mcpDatabase = {
         broadcastScore: 45, 
         shadeComfort: 82, 
         exitEvac: 78,
+        communityDensity: { team: "France", ratio: "90%", label: "Les Bleus Heart" },
         reasoning: "French supporters section. Features high noise spikes when France attacks the North goal. Standard goal-net view with lower ticket upgrade prices than the South Stand."
       },
       "sec-201": { 
@@ -149,6 +158,7 @@ const mcpDatabase = {
         broadcastScore: 68, 
         shadeComfort: 95, 
         exitEvac: 86,
+        communityDensity: { team: "Neutral", ratio: "70%", label: "Mixed Seating" },
         reasoning: "Elevated panoramic seat on the West Side. Perfect tactical overview of the entire pitch. Completely shaded, very comfortable, but selfie/autograph probabilities are extremely low."
       },
       "sec-203": { 
@@ -163,6 +173,7 @@ const mcpDatabase = {
         broadcastScore: 72, 
         shadeComfort: 35, 
         exitEvac: 87,
+        communityDensity: { team: "Neutral", ratio: "65%", label: "Mixed Seating" },
         reasoning: "High East Stand seating. Offers a clean TV-like view of the game. Low shade comfort currently due to direct solar alignment. Ideal for budget-conscious tactical analysis fans."
       },
       "sec-211": { 
@@ -177,6 +188,7 @@ const mcpDatabase = {
         broadcastScore: 35, 
         shadeComfort: 85, 
         exitEvac: 70,
+        communityDensity: { team: "Argentina", ratio: "75%", label: "Albiceleste Upper" },
         reasoning: "High South Stand. Offers an incredible view of the supporter chants below. Experiencing a temporary crowd inflow surge at the gates (density high)."
       }
     },
@@ -389,6 +401,23 @@ Queried **Emergency**, **Vision**, and **Digital Twin MCP** telemetry:
 **AuraAI Operations Recommendation:**
 * **Action 1:** Dispatch **2 Accessibility Volunteers** to *Gate 4* to clear the wheelchair lane.
 * **Action 2:** Trigger a crowd re-routing alert on Section 211 digital signage to redirect incoming spectators to Gate 1. Dispatch **4 security volunteers** to manage Section 211 turnstile lines.`;
+    }
+    // 5. Fan Community & Sit-Together Grouping query
+    else if (lowercaseQuery.includes("together") || lowercaseQuery.includes("community") || lowercaseQuery.includes("group") || lowercaseQuery.includes("sit with") || lowercaseQuery.includes("fan zone") || lowercaseQuery.includes("supporters") || lowercaseQuery.includes("swaps") || lowercaseQuery.includes("match")) {
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_fan_distribution_zones()" });
+      logs.push({ server: "Accessibility MCP", tool: "verify_group_seat_adjacency(quantity: 2, team: 'ARG')" });
+
+      responseText = `### 👥 Fan Community & Sit-Together Swaps
+We queried the **Stadium Digital Twin MCP** and mapped fan community densities:
+* **Live Supporter Wall Distributions:**
+  * **Argentina Fans (Albiceleste):** Concentrated in **South Goal (Sections 110, 111, 112)** at **88%-95% density**.
+  * **France Fans (Les Bleus):** Concentrated in **North Goal (Sections 120, 121)** at **85%-90% density**.
+  * **Neutral/Mixed Zones:** Center tiers (Sections 101, 102, 103, 104) are mixed/corporate zones.
+* **Sit-Together Seat Swaps Active:**
+  * **Argentina Fans Swap:** Section 111 has a matching community seat swap active. Two adjacent seats are available for Albiceleste fans looking to join the main supporters group.
+  * **France Fans Swap:** Section 121 has a group seating swap vacancy offering direct sightlines to the French supporter core.
+
+**AuraAI Recommendation:** Upgrade to **Section 111** (if you support Argentina) or **Section 121** (if you support France). Your digital tickets will be updated instantly so you can sit directly with your community wall!`;
     }
     // Default fallback query
     else {

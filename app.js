@@ -162,6 +162,9 @@ function applyOverlayColors() {
       case 'experience':
         score = data.overallAura;
         break;
+      case 'community':
+        score = data.communityDensity.team === 'Argentina' ? 95 : (data.communityDensity.team === 'France' ? 80 : 20);
+        break;
       case 'jersey':
         score = data.jerseyProb;
         break;
@@ -193,6 +196,20 @@ function applyOverlayColors() {
         secEl.style.fill = '#f59e0b'; // Sunny yellow
         secEl.style.fillOpacity = 0.25;
         secEl.style.stroke = '#fbbf24';
+      }
+    } else if (metric === 'community') {
+      if (data.communityDensity.team === 'Argentina') {
+        secEl.style.fill = '#38bdf8'; // Sky Blue
+        secEl.style.fillOpacity = 0.65;
+        secEl.style.stroke = '#bae6fd';
+      } else if (data.communityDensity.team === 'France') {
+        secEl.style.fill = '#ec4899'; // France pink
+        secEl.style.fillOpacity = 0.55;
+        secEl.style.stroke = '#fbcfe8';
+      } else {
+        secEl.style.fill = 'rgba(255, 255, 255, 0.04)';
+        secEl.style.fillOpacity = 0.15;
+        secEl.style.stroke = 'rgba(255, 255, 255, 0.15)';
       }
     } else {
       if (score >= 90) {
@@ -284,6 +301,26 @@ function selectSection(secId) {
   document.getElementById('seatAuraScore').textContent = secData.overallAura;
   document.getElementById('seatPrice').textContent = `$${secData.price}`;
   document.getElementById('seatReasoningText').textContent = secData.reasoning;
+
+  // Update Community density badge
+  const commData = secData.communityDensity;
+  if (commData) {
+    document.getElementById('seatCommunityVal').textContent = `${commData.label} (${commData.ratio})`;
+    const badge = document.getElementById('seatCommunityBadge');
+    if (commData.team === 'Argentina') {
+      badge.style.background = 'rgba(56, 189, 248, 0.15)';
+      badge.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+      document.getElementById('seatCommunityVal').style.color = '#38bdf8';
+    } else if (commData.team === 'France') {
+      badge.style.background = 'rgba(236, 72, 153, 0.15)';
+      badge.style.borderColor = 'rgba(236, 72, 153, 0.35)';
+      document.getElementById('seatCommunityVal').style.color = 'var(--accent)';
+    } else {
+      badge.style.background = 'rgba(255, 255, 255, 0.05)';
+      badge.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+      document.getElementById('seatCommunityVal').style.color = 'var(--text-muted)';
+    }
+  }
 
   // Fill Metrics Progress Bars
   updateMetricBar('metricJersey', secData.jerseyProb);
