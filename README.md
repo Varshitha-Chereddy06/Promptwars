@@ -86,12 +86,12 @@ Glues all interactive elements and states together.
 * **Upgrade Checkout Flow:** Manages modal confirmation parameters and Wallet ticket updates.
 
 ### 6. `tests.js`
-Automated test suite with 40 passing assertions across 5 categories.
+Automated test suite with **53 passing assertions** across 5 categories.
 * **Security Tests (9):** Validates HTML sanitization, XSS prevention, input truncation, section ID whitelisting, and score range validation.
 * **Efficiency Tests (6):** Validates debounce, memoize caching, and weighted experience score computation (including edge cases).
 * **Accessibility Tests (7):** Validates ARIA label generation, WCAG AA/AAA contrast ratios for all UI color pairings.
 * **Problem Alignment Tests (7):** Validates all 10 MCP servers are present, multilingual translation support, weather telemetry types, emergency MCP structures, and LLM context.
-* **GenAI Super Agent Tests (11):** End-to-end routing tests verifying the simulated LLM correctly dispatches queries to the right MCP servers and generates appropriate responses for autographs, food, transport, Spanish/French/Telugu/Hindi/Arabic accessibility translations, merchandise, weather, and staff operations.
+* **GenAI Super Agent Tests (24):** End-to-end routing tests verifying the simulated LLM correctly dispatches queries to the right MCP servers. Covers autographs, food, transport, Spanish/French/Telugu/Hindi/Arabic accessibility translations, merchandise, weather, staff operations, XSS terminal escaping, actual `mcpDatabase` key alignment, `sanitizeInput`/`validateScore` edge cases (null, NaN, Infinity), section ID regex validation against live data, merchandise/accessibility/emergency data integrity, and fallback query routing.
 
 ### 7. `package.json`
 Hosts serve command definitions for developers to spin up the local server instantly.
@@ -103,9 +103,11 @@ Hosts serve command definitions for developers to spin up the local server insta
 The application implements defense-in-depth security:
 * **Content Security Policy (CSP):** Strict CSP meta-tag blocks inline script execution (`script-src 'self'`), preventing XSS injection. All JavaScript is loaded from external files only.
 * **Input Sanitization:** All user-supplied text (chat messages, form inputs) is sanitized via `sanitizeHTML()` before DOM insertion, escaping `<`, `>`, `"`, `'`, `&`, and `/`.
+* **MCP Terminal XSS Hardening:** All user queries, MCP server names, and tool call strings are HTML-escaped via a dedicated `escapeHTML()` helper inside `mcp_simulator.js` before being written to the MCP log terminal via `innerHTML`, preventing stored XSS in the operations console.
 * **Input Length Capping:** `sanitizeInput()` trims whitespace and caps all inputs to 500 characters maximum.
 * **ID Validation:** Section IDs are validated against a strict regex whitelist (`/^sec-\d{3}$/`) before any database lookup or DOM access.
 * **Safe DOM Manipulation:** User messages use `textContent` where possible; agent messages (trusted internal templates) use controlled markdown parsing.
+* **Inline Style Elimination:** All static `style=` attributes moved to dedicated CSS classes (`.community-density-badge`, `.community-label`, `.community-value`, `.seat-badge-group`, `.upgrade-card-desc`) in `index.css`, reducing attack surface and improving CSP compliance.
 * **HTTP Security Headers:** `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 
 ---
