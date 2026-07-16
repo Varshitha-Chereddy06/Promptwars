@@ -1894,3 +1894,51 @@ body {
   from { transform: translateY(100px) scale(0.8); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
+
+/* Custom utility classes to replace static inline styles */
+.placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.seat-badge-group {
+  display: flex;
+  gap: 10px;
+}
+
+.community-density-badge {
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-align: center;
+  transition: background var(--transition-normal), border var(--transition-normal);
+}
+
+.community-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.community-value {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--secondary);
+}
+
+.community-swap-card {
+  border: 1px dashed rgba(6, 182, 212, 0.6) !important;
+  background: rgba(6, 182, 212, 0.03) !important;
+}
+
+.upgrade-card-desc {
+  font-size: 11px;
+  margin-top: -6px;
+  color: var(--text-muted);
+}
+

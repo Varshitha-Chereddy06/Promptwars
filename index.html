@@ -42,7 +42,7 @@
           <div class="logo-ring"></div>
         </div>
         <div class="logo-text">
-          <span class="logo-title">FIFA <span class="gradient-text">AuraAI</span></span>
+          <h1 class="logo-title">FIFA <span class="gradient-text">AuraAI</span></h1>
           <span class="logo-tagline">EXPERIENCE INTELLIGENCE ENGINE</span>
         </div>
       </div>
@@ -277,7 +277,7 @@
         <!-- Section Details Card -->
         <div class="card glass-card" id="seatDetailCard">
           <div class="card-placeholder" id="seatCardPlaceholder">
-            <i class="fa-solid fa-hand-pointer text-fade pulsate" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <i class="fa-solid fa-hand-pointer text-fade pulsate placeholder-icon" aria-hidden="true"></i>
             <p>Click any stadium section to analyze live Experience Scores, trajectories, and dynamic upgrades.</p>
           </div>
           
@@ -287,10 +287,10 @@
                 <span class="seat-category" id="seatCategory">Category 1 (Lower Pitchside)</span>
                 <h3 class="seat-section-title" id="seatSectionTitle">Section 101</h3>
               </div>
-              <div style="display: flex; gap: 10px;">
-                <div class="community-density-badge" id="seatCommunityBadge" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 8px 12px; border-radius: 12px; text-align: center;">
-                  <span class="community-label" style="display: block; font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Community</span>
-                  <span class="community-value" id="seatCommunityVal" style="font-family: var(--font-title); font-size: 13px; font-weight: 800; color: var(--secondary);">Neutral</span>
+              <div class="seat-badge-group">
+                <div class="community-density-badge" id="seatCommunityBadge">
+                  <span class="community-label">Community</span>
+                  <span class="community-value" id="seatCommunityVal">Neutral</span>
                 </div>
                 <div class="aura-score-badge">
                   <span class="aura-score-label">Aura Score</span>
@@ -509,7 +509,7 @@
 
               <div class="upgrade-list" id="upgradeList">
                 <!-- Community Seating Upgrade Card -->
-                <div class="upgrade-card" data-sec="sec-111" data-cost="35" data-label="Section 111" style="border: 1px dashed rgba(6, 182, 212, 0.6); background: rgba(6, 182, 212, 0.03);">
+                <div class="upgrade-card community-swap-card" data-sec="sec-111" data-cost="35" data-label="Section 111">
                   <div class="upgrade-card-header">
                     <div>
                       <span class="badge badge-cyan"><i class="fa-solid fa-users"></i> Fan Community Swap</span>
@@ -517,7 +517,7 @@
                     </div>
                     <div class="upgrade-cost">+$35</div>
                   </div>
-                  <p style="font-size: 11px; margin-top: -6px; color: var(--text-muted);">Join 3 fellow Albiceleste fans! Active sit-together seat swap is open.</p>
+                  <p class="upgrade-card-desc">Join 3 fellow Albiceleste fans! Active sit-together seat swap is open.</p>
                   <div class="upgrade-comparison">
                     <div class="comp-item">
                       <span>Community Density</span>
@@ -763,9 +763,9 @@
 
               <div class="cert-body">
                 <p class="cert-introduction">This certifies that</p>
-                <h1 class="cert-name" id="certFanName">Leo Fan</h1>
+                <h3 class="cert-name" id="certFanName">Leo Fan</h3>
                 <p class="cert-desc">witnessed the epic World Cup Clash of Titans at MetLife Stadium from the high-aura seat</p>
-                <h3 class="cert-seat" id="certFanSeat">Section 101, Row D</h3>
+                <h4 class="cert-seat" id="certFanSeat">Section 101, Row D</h4>
                 
                 <!-- Fan Statistics grid -->
                 <div class="cert-stats-grid">

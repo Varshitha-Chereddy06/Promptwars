@@ -275,6 +275,22 @@ const mcpDatabase = {
     securityAlerts: [],
     evacuationStatus: "Normal Operations",
     activeStaffDeployed: 310
+  },
+  translation: {
+    supportedLanguages: ['en', 'es', 'fr', 'ar', 'hi', 'te'],
+    glossary: {
+      wheelchair: { es: "silla de ruedas", fr: "fauteuil roulant", ar: "كرسي متحرك", hi: "व्हीलचेयर", te: "వీల్‌చైర్" },
+      elevator: { es: "ascensor", fr: "ascenseur", ar: "مصعد", hi: "लिफ्ट", te: "లిఫ్ట్" },
+      exit: { es: "salida", fr: "sortie", ar: "مخرج", hi: "निकास", te: "నిష్క్రమణ" }
+    }
+  },
+  llm: {
+    model: 'gemini-1.5-pro',
+    context: 'FIFA World Cup 2026',
+    temperature: 0.2
+  },
+  get fifaStats() {
+    return this.stats;
   }
 };
 
@@ -286,9 +302,24 @@ function simulateLLMReasoning(query, currentSeatId = "sec-203", role = "fan") {
   const terminal = document.getElementById("mcpTerminal");
   if (!terminal) return;
 
+  // HTML escaping helper to prevent XSS inside the terminal console
+  const escapeHTML = (str) => {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
+  };
+
+  const safeQuery = escapeHTML(query);
+  const safeRole = escapeHTML(role);
+
   // Clear or prepare console
   terminal.innerHTML += `<div class="mcp-log-entry system">[${new Date().toLocaleTimeString()}] --- NEW LLM INQUIRY RECEIVED ---</div>`;
-  terminal.innerHTML += `<div class="mcp-log-entry system">Query: "${query}" | Persona: ${role}</div>`;
+  terminal.innerHTML += `<div class="mcp-log-entry system">Query: "${safeQuery}" | Persona: ${safeRole}</div>`;
   terminal.scrollTop = terminal.scrollHeight;
 
   return new Promise((resolve) => {
@@ -513,7 +544,9 @@ Could you please specify your question? For example:
     let delay = 300;
     logs.forEach((log, index) => {
       setTimeout(() => {
-        terminal.innerHTML += `<div class="mcp-log-entry call">[CALLING ${log.server}] -> ${log.tool}</div>`;
+        const safeServer = escapeHTML(log.server);
+        const safeTool = escapeHTML(log.tool);
+        terminal.innerHTML += `<div class="mcp-log-entry call">[CALLING ${safeServer}] -> ${safeTool}</div>`;
         terminal.scrollTop = terminal.scrollHeight;
       }, delay * (index + 1));
     });
@@ -527,3 +560,10 @@ Could you please specify your question? For example:
     }, delay * (logs.length + 1));
   });
 }
+
+// Expose to global scope for testing
+if (typeof global !== 'undefined') {
+  global.mcpDatabase = mcpDatabase;
+  global.simulateLLMReasoning = simulateLLMReasoning;
+}
+

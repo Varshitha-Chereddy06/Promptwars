@@ -13,17 +13,19 @@ if (typeof require !== 'undefined') {
   
   // Mock DOM environment for mcp_simulator.js
   if (typeof global !== 'undefined' && !global.document) {
+    const mockTerminalEl = {
+      innerHTML: '',
+      scrollTop: 0,
+      scrollHeight: 0
+    };
     global.document = {
       getElementById: (id) => {
         if (id === 'mcpTerminal') {
-          return {
-            innerHTML: '',
-            scrollTop: 0,
-            scrollHeight: 0
-          };
+          return mockTerminalEl;
         }
         return null;
-      }
+      },
+      mockTerminal: mockTerminalEl
     };
   }
   
@@ -361,6 +363,73 @@ describe('🤖 GenAI Super Agent — Simulated LLM Routing & Responses', () => {
       expect(res).toContain("Operational Intelligence Dispatch Report");
       expect(res).toContain("Gate 4 Congestion");
       expect(res).toContain("Section 211 Inflow");
+    });
+  });
+
+  it('escapes user query in mcp terminal to prevent XSS', () => {
+    if (global.document && global.document.mockTerminal) {
+      global.document.mockTerminal.innerHTML = '';
+      return simulateLLMReasoning("<script>alert('xss')</script>").then(() => {
+        expect(global.document.mockTerminal.innerHTML).toNotContain("<script>");
+        expect(global.document.mockTerminal.innerHTML).toContain("&lt;script&gt;");
+      });
+    }
+  });
+
+  it('all 10 required MCP servers are present in actual mcpDatabase', () => {
+    const missing = validateMcpDatabase(mcpDatabase);
+    expect(missing.length).toBe(0);
+  });
+
+  it('mcpDatabase has translation server configured with 6 languages', () => {
+    expect(mcpDatabase.translation.supportedLanguages.length).toBe(6);
+    expect(mcpDatabase.translation.supportedLanguages).toContain('te');
+  });
+
+  it('sanitizeInput edge case - handles empty input gracefully', () => {
+    expect(sanitizeInput("")).toBe("");
+  });
+
+  it('sanitizeInput edge case - handles non-string inputs', () => {
+    expect(sanitizeInput(null)).toBe("");
+    expect(sanitizeInput(undefined)).toBe("");
+  });
+
+  it('validateScore edge case - rejects NaN', () => {
+    expect(validateScore(NaN)).toBeFalsy();
+  });
+
+  it('validateScore edge case - rejects Infinity', () => {
+    expect(validateScore(Infinity)).toBeFalsy();
+  });
+
+  it('validateScore edge case - rejects non-numeric object', () => {
+    expect(validateScore({})).toBeFalsy();
+  });
+
+  it('all sections in actual mcpDatabase are valid section IDs', () => {
+    const sections = Object.keys(mcpDatabase.digitalTwin.sections);
+    sections.forEach(secId => {
+      expect(validateSectionId(secId)).toBeTruthy();
+    });
+  });
+
+  it('mcpDatabase.merchandise stores wait times are defined', () => {
+    expect(mcpDatabase.merchandise.stores['South Goal Vendor'].queueMins).toBe(18);
+  });
+
+  it('mcpDatabase.accessibility lifts status is fully operational', () => {
+    expect(mcpDatabase.accessibility.liftsStatus).toContain("All 12 Lifts Operational");
+  });
+
+  it('mcpDatabase.emergency has active staff deployed', () => {
+    expect(mcpDatabase.emergency.activeStaffDeployed).toBeGreaterThan(300);
+  });
+
+  it('simulateLLMReasoning routes fallback/unknown query to general info', () => {
+    return simulateLLMReasoning("Random unknown question").then(res => {
+      expect(res).toContain("FIFA AuraAI Stadium Status");
+      expect(res).toContain("Argentina 2 - 2 France");
     });
   });
 });
