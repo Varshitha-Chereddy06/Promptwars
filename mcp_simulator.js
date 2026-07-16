@@ -1,0 +1,427 @@
+/**
+ * FIFA AuraAI - Model Context Protocol (MCP) Simulator & LLM Orchestrator
+ * This file simulates a network of 10 specialized MCP servers and an intelligent 
+ * LLM reasoning layer to solve queries during the FIFA World Cup 2026.
+ */
+
+// Simulated Telemetry Database
+const mcpDatabase = {
+  // Stadium Digital Twin Data
+  digitalTwin: {
+    occupancy: 82410,
+    maxCapacity: 82500,
+    sections: {
+      "sec-101": { 
+        name: "Section 101", 
+        category: "Category 1 (West Lower)", 
+        basePrice: 220, 
+        price: 285, 
+        overallAura: 92, 
+        jerseyProb: 82, 
+        selfieScore: 74, 
+        chantEnergy: 96, 
+        broadcastScore: 60, 
+        shadeComfort: 90, 
+        exitEvac: 85,
+        reasoning: "Excellent selfie and autograph probabilities as the player benches are located directly in front. With Argentina attacking this side in the 2nd half, goal celebrations are likely to peak here. Roof canopy provides solid afternoon shade cover."
+      },
+      "sec-102": { 
+        name: "Section 102", 
+        category: "Category 1 (West Lower)", 
+        basePrice: 220, 
+        price: 275, 
+        overallAura: 87, 
+        jerseyProb: 65, 
+        selfieScore: 72, 
+        chantEnergy: 84, 
+        broadcastScore: 92, 
+        shadeComfort: 92, 
+        exitEvac: 83,
+        reasoning: "Perfect center-line camera visibility. High probability of appearing on international TV broadcasts. Close to VIP boxes and central entryways, but slightly further from corner-flag celebration hotspots."
+      },
+      "sec-103": { 
+        name: "Section 103", 
+        category: "Category 1 (East Lower)", 
+        basePrice: 200, 
+        price: 235, 
+        overallAura: 85, 
+        jerseyProb: 55, 
+        selfieScore: 68, 
+        chantEnergy: 80, 
+        broadcastScore: 85, 
+        shadeComfort: 40, 
+        exitEvac: 88,
+        reasoning: "Direct pitch view on the East side. Currently exposed to late afternoon sun glare (low shade comfort). Moderate autograph/selfie score, but offers extremely rapid exit routes directly to Gate 2."
+      },
+      "sec-104": { 
+        name: "Section 104", 
+        category: "Category 1 (East Lower)", 
+        basePrice: 200, 
+        price: 245, 
+        overallAura: 86, 
+        jerseyProb: 60, 
+        selfieScore: 70, 
+        chantEnergy: 82, 
+        broadcastScore: 82, 
+        shadeComfort: 45, 
+        exitEvac: 88,
+        reasoning: "Located right next to Section 103. Slightly better shadow shelter as the stadium angle shifts. Excellent proximity to the East Side Merchandise Megastore, featuring low queue delays."
+      },
+      "sec-110": { 
+        name: "Section 110", 
+        category: "Category 2 (South Goal - Row A-M)", 
+        basePrice: 180, 
+        price: 225, 
+        overallAura: 88, 
+        jerseyProb: 74, 
+        selfieScore: 65, 
+        chantEnergy: 98, 
+        broadcastScore: 50, 
+        shadeComfort: 80, 
+        exitEvac: 78,
+        reasoning: "Located right behind the South Goal. Perfect view of penalty dynamics. Experience score boosted (+42%) by Argentina fans chanting intensely, creating an electric, highly contagious atmosphere."
+      },
+      "sec-111": { 
+        name: "Section 111", 
+        category: "Category 2 (South Goal Center)", 
+        basePrice: 160, 
+        price: 215, 
+        overallAura: 94, 
+        jerseyProb: 88, 
+        selfieScore: 55, 
+        chantEnergy: 99, 
+        broadcastScore: 45, 
+        shadeComfort: 82, 
+        exitEvac: 75,
+        reasoning: "The heartbeat of the South Stand supporters. Chant levels are deafening (112+ dB). Extreme high probability of jersey tosses and post-goal player runs to the crowd corner."
+      },
+      "sec-112": { 
+        name: "Section 112", 
+        category: "Category 2 (South Goal Corner)", 
+        basePrice: 150, 
+        price: 195, 
+        overallAura: 80, 
+        jerseyProb: 72, 
+        selfieScore: 58, 
+        chantEnergy: 92, 
+        broadcastScore: 40, 
+        shadeComfort: 85, 
+        exitEvac: 80,
+        reasoning: "Positioned directly beside the corner flag. High chance of capturing corner kick drama and player slides. Tunnel A is in close view, offering accessibility ramps."
+      },
+      "sec-120": { 
+        name: "Section 120", 
+        category: "Category 2 (North Goal Corner)", 
+        basePrice: 150, 
+        price: 175, 
+        overallAura: 78, 
+        jerseyProb: 65, 
+        selfieScore: 60, 
+        chantEnergy: 85, 
+        broadcastScore: 40, 
+        shadeComfort: 80, 
+        exitEvac: 82,
+        reasoning: "North Stand corner flag view. Excellent view of France's defensive setup. Currently experiences a lighter crowd density, allowing quick vendor queue accesses."
+      },
+      "sec-121": { 
+        name: "Section 121", 
+        category: "Category 2 (North Goal Center)", 
+        basePrice: 160, 
+        price: 185, 
+        overallAura: 82, 
+        jerseyProb: 78, 
+        selfieScore: 52, 
+        chantEnergy: 90, 
+        broadcastScore: 45, 
+        shadeComfort: 82, 
+        exitEvac: 78,
+        reasoning: "French supporters section. Features high noise spikes when France attacks the North goal. Standard goal-net view with lower ticket upgrade prices than the South Stand."
+      },
+      "sec-201": { 
+        name: "Section 201", 
+        category: "Category 3 (West Upper)", 
+        basePrice: 120, 
+        price: 135, 
+        overallAura: 62, 
+        jerseyProb: 20, 
+        selfieScore: 18, 
+        chantEnergy: 75, 
+        broadcastScore: 68, 
+        shadeComfort: 95, 
+        exitEvac: 86,
+        reasoning: "Elevated panoramic seat on the West Side. Perfect tactical overview of the entire pitch. Completely shaded, very comfortable, but selfie/autograph probabilities are extremely low."
+      },
+      "sec-203": { 
+        name: "Section 203", 
+        category: "Category 3 (East Upper)", 
+        basePrice: 110, 
+        price: 120, 
+        overallAura: 52, 
+        jerseyProb: 15, 
+        selfieScore: 12, 
+        chantEnergy: 70, 
+        broadcastScore: 72, 
+        shadeComfort: 35, 
+        exitEvac: 87,
+        reasoning: "High East Stand seating. Offers a clean TV-like view of the game. Low shade comfort currently due to direct solar alignment. Ideal for budget-conscious tactical analysis fans."
+      },
+      "sec-211": { 
+        name: "Section 211", 
+        category: "Category 4 (South Upper)", 
+        basePrice: 90, 
+        price: 105, 
+        overallAura: 56, 
+        jerseyProb: 10, 
+        selfieScore: 8, 
+        chantEnergy: 85, 
+        broadcastScore: 35, 
+        shadeComfort: 85, 
+        exitEvac: 70,
+        reasoning: "High South Stand. Offers an incredible view of the supporter chants below. Experiencing a temporary crowd inflow surge at the gates (density high)."
+      }
+    },
+    gates: {
+      "Gate 1": { status: "Clear", queueTimeMins: 2, flows: "Low" },
+      "Gate 2": { status: "Clear", queueTimeMins: 3, flows: "Medium" },
+      "Gate 3": { status: "Minor Delay", queueTimeMins: 8, flows: "Medium-High" },
+      "Gate 4": { status: "Congested", queueTimeMins: 14, flows: "High" }
+    }
+  },
+  
+  // Vision AI Detections
+  vision: {
+    yoloDetections: {
+      players: ["Messi", "De Paul", "Mbappe", "Griezmann", "Dembele"],
+      crowdDensity: "High near South Gates, Normal elsewhere",
+      autographEvents: { active: true, location: "Tunnel A vicinity", confidence: 0.88 },
+      jerseyToss: { active: false, lastLocation: "Section 111 goal area" }
+    },
+    vendorQueues: {
+      "Gate 4 Hotdogs": { length: 22, waitTime: 14 },
+      "East Beer Stand": { length: 8, waitTime: 5 },
+      "South Tacos": { length: 5, waitTime: 3 },
+      "West Premium Burgers": { length: 2, waitTime: 1.5 }
+    }
+  },
+
+  // FIFA Statistics Database
+  stats: {
+    argentinaCelebrations: [
+      { trigger: "Goal", primaryLocation: "South Stand Corner (near Section 110/111)", probability: 0.85 },
+      { trigger: "Halftime", primaryLocation: "Tunnel A (South-West)", probability: 0.95 },
+      { trigger: "Post-match Win", primaryLocation: "South Stand supporters block", probability: 0.90 }
+    ],
+    franceCelebrations: [
+      { trigger: "Goal", primaryLocation: "North Stand Goal Corner (near Section 120)", probability: 0.78 },
+      { trigger: "Halftime", primaryLocation: "Tunnel A", probability: 0.95 }
+    ]
+  },
+
+  // Transport & Traffic Intelligence
+  transport: {
+    metro: { status: "Running", nextArrivals: [4, 9, 14], waitTimeMins: 3, occupancy: "Medium" },
+    uber: { etaMins: 8, priceMultiplier: 1.4, congestionTimeMins: 11 },
+    parking: { lotA: "92% Full", lotB: "78% Full", lotC: "Available" }
+  },
+
+  // Weather Telemetry
+  weather: {
+    temp: 26,
+    humidity: "62%",
+    rainChance: "15%",
+    windSpeed: "12 km/h NW",
+    heatIndex: "27C",
+    condition: "Clear Sky",
+    lightningAlert: "None"
+  },
+
+  // Merchandise Inventory
+  merchandise: {
+    jerseyInventory: {
+      "Messi Home L": 12,
+      "Mbappe Away M": 8,
+      "USA Retro S": 4,
+      "World Cup Official Ball": 48
+    },
+    stores: {
+      "West Side Hub": { status: "Busy", queueMins: 12 },
+      "East Side Express": { status: "Low Queue", queueMins: 2 },
+      "South Goal Vendor": { status: "Very Busy", queueMins: 18 }
+    }
+  },
+
+  // Accessibility Map
+  accessibility: {
+    wheelchairStands: ["Section 103", "Section 104", "Section 112", "Section 202"],
+    liftsStatus: "All 12 Lifts Operational",
+    routeAdvisories: "Elevator C near Gate 4 is prioritizing wheelchair transfers. Wait time is 1 min."
+  },
+
+  // Emergency & Security
+  emergency: {
+    activeMedicalIncidents: 0,
+    securityAlerts: [],
+    evacuationStatus: "Normal Operations",
+    activeStaffDeployed: 310
+  }
+};
+
+/**
+ * Simulates calling MCP tools and executing LLM reasoning over the outputs.
+ * Prints logs to the HTML terminal and resolves with a structured answer.
+ */
+function simulateLLMReasoning(query, currentSeatId = "sec-203", role = "fan") {
+  const terminal = document.getElementById("mcpTerminal");
+  if (!terminal) return;
+
+  // Clear or prepare console
+  terminal.innerHTML += `<div class="mcp-log-entry system">[${new Date().toLocaleTimeString()}] --- NEW LLM INQUIRY RECEIVED ---</div>`;
+  terminal.innerHTML += `<div class="mcp-log-entry system">Query: "${query}" | Persona: ${role}</div>`;
+  terminal.scrollTop = terminal.scrollHeight;
+
+  return new Promise((resolve) => {
+    let responseText = "";
+    const logs = [];
+
+    // Simple keyword extraction for tool selection
+    const lowercaseQuery = query.toLowerCase();
+
+    // 1. Messi / Autograph query
+    if (lowercaseQuery.includes("messi") || lowercaseQuery.includes("autograph") || lowercaseQuery.includes("selfie")) {
+      logs.push({ server: "FIFA Stats MCP", tool: "get_celebration_locations(team: 'ARG', player: 'Messi')" });
+      logs.push({ server: "Vision MCP", tool: "get_live_player_locations()" });
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_section_proximity(tunnel: 'Tunnel A')" });
+      
+      const autographProb = mcpDatabase.digitalTwin.sections["sec-101"].jerseyProb;
+      const tunnels = mcpDatabase.stats.argentinaCelebrations[1].primaryLocation;
+      
+      responseText = `### ✍️ Player Autograph & Interaction Guide
+Based on real-time data from **FIFA Stats MCP** and **Vision MCP**:
+* **Player Habits:** Lionel Messi and Team Argentina historically celebrate 85% of goals in front of the **South Stand (Sections 110-111)**. At halftime and post-match, they evacuate via **Tunnel A (South-West corner)**.
+* **Live Position:** Messi is currently active on the West wing of the pitch.
+* **Best Proximity Seat:** 
+  * **Section 101 / 102 (West Lower):** Right next to the benches. You have a **74% selfie zone score** and **82% jersey toss probability**. 
+  * **Section 110 (South Goal):** Current crowd chant energy is **98/100**. This is where player interaction peaks if a goal is scored.
+
+**AuraAI Recommendation:** If you are in Section 203, upgrade to **Section 101 or 110** immediately to increase player interaction probability by **+70%**!`;
+    }
+    // 2. Queue / Food query
+    else if (lowercaseQuery.includes("queue") || lowercaseQuery.includes("food") || lowercaseQuery.includes("hotdog") || lowercaseQuery.includes("burger") || lowercaseQuery.includes("hungry")) {
+      logs.push({ server: "Vision MCP", tool: "get_live_vendor_queues()" });
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_closest_vendors(current_seat: '" + currentSeatId + "')" });
+      
+      const queueList = Object.entries(mcpDatabase.vision.vendorQueues)
+        .map(([name, data]) => `* **${name}**: ${data.length} people in line (~${data.waitTime} mins wait)`).join("\n");
+      
+      responseText = `### 🍔 Food & Beverage Crowd Intelligence
+We polled **Vision MCP** CCTV feeds and mapped them to your location:
+${queueList}
+
+**AuraAI Navigation Strategy:**
+* **Your nearest vendor:** *East Beer Stand* is just 30 meters from you with only a 5-minute wait time.
+* **Best Option:** If you want premium food, **West Premium Burgers** has a 1.5-minute wait time (only 2 people in line!).
+* **Avoid:** *Gate 4 Hotdogs* is heavily congested due to high fan inflow from Gate 4 security gates. 
+
+*Tip: If you wait 5 more minutes until the 78th minute, crowd density at East stands is predicted to drop by another 30%.*`;
+    }
+    // 3. Metro / Transport / Exit / Crowded query
+    else if (lowercaseQuery.includes("metro") || lowercaseQuery.includes("transport") || lowercaseQuery.includes("exit") || lowercaseQuery.includes("uber") || lowercaseQuery.includes("train") || lowercaseQuery.includes("traffic")) {
+      logs.push({ server: "Transport MCP", tool: "get_transit_status()" });
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_gate_flow_metrics()" });
+      logs.push({ server: "Emergency MCP", tool: "get_evacuation_routes()" });
+
+      const metroNext = mcpDatabase.transport.metro.nextArrivals[0];
+      const uberSurge = mcpDatabase.transport.uber.priceMultiplier;
+      const gate4Status = mcpDatabase.digitalTwin.gates["Gate 4"].status;
+
+      responseText = `### 🚇 Evacuation & Transit Routing Support
+Our real-time routing layer queried the **Transport MCP** and **Digital Twin MCP**:
+* **Metro Train:** Transit is running smoothly. Next train arrives in **${metroNext} minutes** at the Stadium Station. Current station queue occupancy is **Medium**.
+* **Uber/Ride-share:** Surge multiplier is currently **${uberSurge}x**. Heavy traffic congestion on the Main Boulevard adds **11 minutes** to departures.
+* **Gate Status:**
+  * **Gate 1 & 2:** Clear (Under 3 mins transit time).
+  * **Gate 4:** **CONGESTED** (${mcpDatabase.digitalTwin.gates["Gate 4"].queueTimeMins} mins delay). Avoid exiting via Gate 4 if possible.
+
+**AuraAI Recommendation:** Exit the stadium via **Gate 2** (East side). Walk to the Metro station. This routes you completely around the West Gate congestion, saving you approximately **18 minutes** of waiting.`;
+    }
+    // 4. Accessibility / Wheelchair / Spanish
+    else if (lowercaseQuery.includes("wheelchair") || lowercaseQuery.includes("accessibility") || lowercaseQuery.includes("elev") || lowercaseQuery.includes("elevator") || lowercaseQuery.includes("disable") || lowercaseQuery.includes("spanish") || lowercaseQuery.includes("¿cómo")) {
+      logs.push({ server: "Accessibility MCP", tool: "get_accessible_routes(origin: '" + currentSeatId + "')" });
+      logs.push({ server: "Translation MCP", tool: "translate_text(language: 'ES')" });
+      
+      const routeAdv = mcpDatabase.accessibility.routeAdvisories;
+      const standsList = mcpDatabase.accessibility.wheelchairStands.join(", ");
+
+      if (lowercaseQuery.includes("spanish") || lowercaseQuery.includes("¿cómo") || lowercaseQuery.includes("como")) {
+        responseText = `### ♿ Guía de Accesibilidad (Español)
+Traducido por **Translation MCP** y verificado con **Accessibility MCP**:
+* **Rutas Accesibles:** Todos los 12 ascensores están en funcionamiento.
+* **Alerta de Tráfico:** El ascensor C en la Puerta 4 está reservado prioritariamente para personas con movilidad reducida (tiempo de espera: 1 min).
+* **Secciones Accesibles:** Zonas adaptadas en **${standsList}**.
+
+**Recomendación de Ruta:** Si se encuentra en el nivel superior, tome el pasillo accesible hacia el **Ascensor B**. El personal voluntario en la Puerta 2 le guiará directamente a la rampa de salida.`;
+      } else {
+        responseText = `### ♿ Accessibility & Mobility Guidance
+Queried **Accessibility MCP** and **Digital Twin maps**:
+* **Elevators:** All 12 lifts are fully operational.
+* **Elevator Priority:** ${routeAdv}
+* **Wheelchair Seating Zones:** Designated areas are active in **${standsList}**.
+* **Support Staff:** 12 Accessibility volunteers are stationed at the bottom of Section 103 / 104 ramps.
+
+**Evacuation Advice:** Take the ramp leading to Elevator B. The flow is 50% lighter than Elevator C, offering a smooth path to Gate 2.`;
+      }
+    }
+    // 5. Staff: Volunteer/Security congestion query
+    else if (role === "staff" && (lowercaseQuery.includes("volunteer") || lowercaseQuery.includes("incident") || lowercaseQuery.includes("congestion") || lowercaseQuery.includes("security") || lowercaseQuery.includes("alert"))) {
+      logs.push({ server: "Emergency MCP", tool: "get_security_incidents()" });
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_congestion_hotspots()" });
+      logs.push({ server: "Vision MCP", tool: "yolo_detect_crowd_anomalies()" });
+
+      const activeVolunteers = mcpDatabase.emergency.activeStaffDeployed;
+
+      responseText = `### 🚨 Operational Intelligence Dispatch Report (Staff Only)
+Queried **Emergency**, **Vision**, and **Digital Twin MCP** telemetry:
+* **Active Incidents:** 
+  1. *Gate 4 Congestion:* Crowd bottleneck blocking wheelchair corridor (Severity: **Medium**).
+  2. *Section 211 Inflow:* Surge detected at upper tier access points (Severity: **High** if untreated).
+* **Staff Deployment Status:** ${activeVolunteers} volunteers active. 24 reserves standby.
+
+**AuraAI Operations Recommendation:**
+* **Action 1:** Dispatch **2 Accessibility Volunteers** to *Gate 4* to clear the wheelchair lane.
+* **Action 2:** Trigger a crowd re-routing alert on Section 211 digital signage to redirect incoming spectators to Gate 1. Dispatch **4 security volunteers** to manage Section 211 turnstile lines.`;
+    }
+    // Default fallback query
+    else {
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_match_general_metrics()" });
+      logs.push({ server: "Weather MCP", tool: "get_live_weather()" });
+
+      responseText = `### ℹ️ FIFA AuraAI Stadium Status
+I queried **Weather MCP** and **Stadium Twin MCP** to answer your request:
+* **Current Score:** Argentina 2 - 2 France (72')
+* **Stadium Weather:** ${mcpDatabase.weather.temp}°C, ${mcpDatabase.weather.condition}. Wind is ${mcpDatabase.weather.windSpeed}. No rain alerts.
+* **Stadium Attendance:** ${mcpDatabase.digitalTwin.occupancy} fans inside.
+
+Could you please specify your question? For example:
+* *"Where is the Messi autograph hot spot?"*
+* *"Which food stalls have no queues?"*
+* *"What is the fastest way to get to the metro?"*`;
+    }
+
+    // Simulate async tool execution waterfall in the terminal
+    let delay = 300;
+    logs.forEach((log, index) => {
+      setTimeout(() => {
+        terminal.innerHTML += `<div class="mcp-log-entry call">[CALLING ${log.server}] -> ${log.tool}</div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+      }, delay * (index + 1));
+    });
+
+    // Final response logs and output
+    setTimeout(() => {
+      terminal.innerHTML += `<div class="mcp-log-entry response">[RESPONSE] Queries completed successfully. Processing inputs through LLM reasoning layer...</div>`;
+      terminal.innerHTML += `<div class="mcp-log-entry llm">[LLM REASONING] Formulating recommendation based on crowds, player patterns, and spatial metadata.</div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+      resolve(responseText);
+    }, delay * (logs.length + 1));
+  });
+}
