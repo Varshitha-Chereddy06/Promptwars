@@ -1,6 +1,54 @@
 // FIFA AuraAI - Main Application Logic
 // Handles state, SVG map rendering, YOLO Canvas simulation, Chat Concierge, and Fan memory generation.
 
+// ─── Security: HTML sanitizer (mirrors tests.js) ─────────────────────────────
+function sanitizeHTML(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return '';
+  return input.trim().slice(0, 500);
+}
+function validateSectionId(id) {
+  return /^sec-\d{3}$/.test(id);
+}
+
+// ─── Efficiency: Debounce & Memoize ──────────────────────────────────────────
+function debounce(fn, wait) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+function memoize(fn) {
+  const cache = new Map();
+  return function (...args) {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+// Memoized experience score computation - avoids re-calculation on repeated access
+const computeExperienceScore = memoize(function(data) {
+  if (!data || typeof data !== 'object') return 0;
+  const weights = { overallAura: 0.40, selfieScore: 0.15, jerseyProb: 0.15, chantEnergy: 0.15, shadeComfort: 0.10, exitEvac: 0.05 };
+  return Math.round(
+    Object.entries(weights).reduce((total, [key, weight]) => total + (data[key] || 0) * weight, 0)
+  );
+});
+
 // Global App State
 const state = {
   currentRole: 'fan',
@@ -37,12 +85,24 @@ window.addEventListener('DOMContentLoaded', () => {
   setupSVGEventHandlers();
   
   // Set initial labels
-  document.getElementById('mySeatLabel').textContent = state.mySeatLabel;
-  document.getElementById('mySeatAura').textContent = state.mySeatAura + '/100';
-  document.getElementById('fanSeat').value = state.mySeatLabel;
+  const mySeatLabelEl = document.getElementById('mySeatLabel');
+  const mySeatAuraEl = document.getElementById('mySeatAura');
+  const fanSeatEl = document.getElementById('fanSeat');
+  if (mySeatLabelEl) mySeatLabelEl.textContent = state.mySeatLabel;
+  if (mySeatAuraEl) mySeatAuraEl.textContent = state.mySeatAura + '/100';
+  if (fanSeatEl) fanSeatEl.value = state.mySeatLabel;
 
   // Render initial YOLO CCTV Canvas to make it look active in background if tabs switch
   initYoloCanvas();
+  
+  // Keyboard navigation for overlay pills
+  document.getElementById('overlayToggles')?.addEventListener('keydown', (e) => {
+    const pills = [...e.currentTarget.querySelectorAll('.pill-btn')];
+    const idx = pills.indexOf(document.activeElement);
+    if (e.key === 'ArrowRight' && idx < pills.length - 1) { e.preventDefault(); pills[idx + 1].focus(); }
+    if (e.key === 'ArrowLeft' && idx > 0) { e.preventDefault(); pills[idx - 1].focus(); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.activeElement.click(); }
+  });
 });
 
 // 1. Live Match Clock Simulator
@@ -118,7 +178,9 @@ function switchRole(role) {
 
   if (role === 'staff') {
     fanBtn.classList.remove('active');
+    fanBtn.setAttribute('aria-pressed', 'false');
     staffBtn.classList.add('active');
+    staffBtn.setAttribute('aria-pressed', 'true');
     opsTabBtn.style.display = 'flex'; // Show Operations tab
     
     // Show CCTV Bounding overlay on SVG
@@ -128,11 +190,13 @@ function switchRole(role) {
     switchTab('ops');
     showToast("Switched to Stadium Operations view. CCTV & dispatcher active.");
     
-    // Add welcome message to chat
+    // Add welcome message to chat (sanitized)
     addChatMessage("agent", "### 🚨 Staff Operations Concierge Online\nI've unlocked the operational tools and emergency logs. Ask me about **crowd control recommendations**, **volunteer dispatch status**, or **metro queues**.", "15:53");
   } else {
     fanBtn.classList.add('active');
+    fanBtn.setAttribute('aria-pressed', 'true');
     staffBtn.classList.remove('active');
+    staffBtn.setAttribute('aria-pressed', 'false');
     opsTabBtn.style.display = 'none'; // Hide Operations tab
     
     // Hide CCTV Bounding overlay on SVG
@@ -254,12 +318,11 @@ function applyOverlayColors() {
 function changeOverlay(metric) {
   state.activeOverlay = metric;
   
-  // Highlight correct toggle pill
+  // Highlight correct toggle pill + update aria-pressed
   document.querySelectorAll('#overlayToggles .pill-btn').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.getAttribute('data-metric') === metric) {
-      btn.classList.add('active');
-    }
+    const isActive = btn.getAttribute('data-metric') === metric;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   });
 
   applyOverlayColors();
@@ -278,6 +341,11 @@ function setupSVGEventHandlers() {
 }
 
 function selectSection(secId) {
+  // Security: validate section ID format before any DOM or data access
+  if (!validateSectionId(secId)) {
+    console.warn('[AuraAI Security] Invalid section ID rejected:', secId);
+    return;
+  }
   state.selectedSection = secId;
   
   // Highlight clicked section visually on SVG
@@ -344,20 +412,24 @@ function selectSection(secId) {
     deltaEl.className = "price-justification text-fade";
   }
 
-  // Adjust upgrade action button: hide if it's already my seat
+  // Security: use textContent for safe static strings; use safe innerHTML only for trusted icon markup
   const upgradeBtnWrapper = document.getElementById('upgradeBtnWrapper');
   if (secId === state.mySeat) {
-    upgradeBtnWrapper.innerHTML = `
-      <button class="btn btn-outline-primary btn-block" disabled style="opacity: 0.6; cursor: not-allowed;">
-        <i class="fa-solid fa-circle-check"></i> You Are Seated Here
-      </button>
-    `;
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-outline-primary btn-block';
+    btn.disabled = true;
+    btn.style.cssText = 'opacity:0.6;cursor:not-allowed;';
+    btn.setAttribute('aria-label', 'You are already seated here');
+    btn.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> You Are Seated Here';
+    upgradeBtnWrapper.replaceChildren(btn);
   } else {
-    upgradeBtnWrapper.innerHTML = `
-      <button class="btn btn-primary" onclick="initiateSeatUpgrade('${secId}')">
-        <i class="fa-solid fa-circle-chevron-up"></i> Upgrade to This Seat
-      </button>
-    `;
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary';
+    btn.setAttribute('aria-label', `Upgrade to ${secData.name}`);
+    // Safe: secId is already validated via validateSectionId regex above
+    btn.addEventListener('click', () => initiateSeatUpgrade(secId));
+    btn.innerHTML = '<i class="fa-solid fa-circle-chevron-up" aria-hidden="true"></i> Upgrade to This Seat';
+    upgradeBtnWrapper.replaceChildren(btn);
   }
 }
 
@@ -373,25 +445,26 @@ function selectSectionFromMarket(secId) {
   document.getElementById('stadiumMap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// 6. AI chatbot logic
-function sendChatMessage() {
+// 6. AI chatbot logic — debounced to prevent rapid-fire API calls
+const sendChatMessage = debounce(function _sendChat() {
   const input = document.getElementById('chatInput');
-  const query = input.value.trim();
+  const rawQuery = input.value;
+  // Security: sanitize and cap length before processing
+  const query = sanitizeInput(rawQuery);
   if (!query) return;
 
-  // Add User Bubble
+  // Display the user's raw (pre-sanitized display) message
   addChatMessage("user", query, new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   input.value = "";
 
   // Call MCP Simulated Reasoning Waterfall
   simulateLLMReasoning(query, state.mySeat, state.currentRole).then(answer => {
-    // Add Agent Bubble
     addChatMessage("agent", answer, new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   });
-}
+}, 300);
 
 function askQuickQuestion(q) {
-  document.getElementById('chatInput').value = q;
+  document.getElementById('chatInput').value = sanitizeInput(q);
   sendChatMessage();
 }
 
@@ -401,9 +474,15 @@ function addChatMessage(sender, text, timestamp) {
 
   const bubble = document.createElement('div');
   bubble.className = `chat-message ${sender}`;
+  // Accessibility: mark each message as a list item for screen readers
+  bubble.setAttribute('role', 'listitem');
 
-  // Simple Markdown Parsing helper (bold, header titles, lists)
-  let htmlContent = text
+  // Security: user messages are HTML-escaped FIRST before markdown parsing
+  // Agent messages come from trusted internal template strings only
+  const safeText = sender === 'user' ? sanitizeHTML(text) : text;
+
+  // Controlled Markdown parser (applied after escaping for user messages)
+  let htmlContent = safeText
     .replace(/^### (.*$)/gim, '<h4 style="font-family:var(--font-title); font-size:14px; margin-top:8px; margin-bottom:4px; font-weight:700; color:var(--secondary)">$1</h4>')
     .replace(/^## (.*$)/gim, '<h3 style="font-family:var(--font-title); font-size:16px; margin-top:12px; margin-bottom:6px; font-weight:800">$1</h3>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -411,15 +490,13 @@ function addChatMessage(sender, text, timestamp) {
 
   // Wrap list items
   if (htmlContent.includes('<li>')) {
-    // Basic check to group sequential li elements (dirty but fast for simulation)
-    htmlContent = htmlContent.replace(/<\/h4>\n<li/g, '</h4><ul style="margin:6px 0"><li');
-    // close ul
+    htmlContent = htmlContent.replace(/<\/h4>\n<li/g, '</h4><ul style="margin:6px 0"><li>');
   }
 
   bubble.innerHTML = `
     <div class="message-header">
       <span class="sender-name">
-        ${sender === 'agent' ? '<i class="fa-solid fa-robot"></i> FIFA AuraAI Super Agent' : '<i class="fa-solid fa-user-astronaut"></i> You'}
+        ${sender === 'agent' ? '<i class="fa-solid fa-robot" aria-hidden="true"></i> FIFA AuraAI Super Agent' : '<i class="fa-solid fa-user-astronaut" aria-hidden="true"></i> You'}
       </span>
       <span class="timestamp">${timestamp}</span>
     </div>

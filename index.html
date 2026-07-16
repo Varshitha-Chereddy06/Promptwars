@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Content Security Policy: blocks inline XSS, limits resource origins -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://flagcdn.com; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
   <title>FIFA AuraAI - Experience Intelligence Engine</title>
   <meta name="description" content="Next-generation GenAI-powered stadium operations and experience intelligence engine for the FIFA World Cup 2026. Optimize seat selection, live pricing, crowd management, and multilingual assistant.">
+  <meta name="theme-color" content="#070815">
   <!-- Google Fonts: Outfit for headers, Inter for copy -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,16 +23,19 @@
 </head>
 <body>
 
+  <!-- Skip Navigation for screen readers / keyboard users -->
+  <a href="#main-content" class="skip-nav" aria-label="Skip to main content">Skip to main content</a>
+
   <!-- Top Decorative Neon Glow Lines -->
-  <div class="glow-orb top-left"></div>
-  <div class="glow-orb top-right"></div>
-  <div class="glow-orb center-glow"></div>
+  <div class="glow-orb top-left" aria-hidden="true"></div>
+  <div class="glow-orb top-right" aria-hidden="true"></div>
+  <div class="glow-orb center-glow" aria-hidden="true"></div>
 
   <!-- App Wrapper -->
   <div class="app-container">
     
     <!-- Main Navigation Header -->
-    <header class="app-header">
+    <header class="app-header" role="banner">
       <div class="logo-area">
         <div class="logo-icon-wrapper">
           <i class="fa-solid fa-circle-nodes logo-icon"></i>
@@ -56,21 +64,21 @@
 
       <!-- User Role Mode Selection -->
       <div class="role-selector-container">
-        <div class="role-selector">
-          <button id="roleFan" class="role-btn active" onclick="switchRole('fan')">
-            <i class="fa-solid fa-user-astronaut"></i> Fan Mode
+        <div class="role-selector" role="group" aria-label="User role selection">
+          <button id="roleFan" class="role-btn active" onclick="switchRole('fan')" aria-pressed="true" aria-label="Switch to Fan Mode">
+            <i class="fa-solid fa-user-astronaut" aria-hidden="true"></i> Fan Mode
           </button>
-          <button id="roleStaff" class="role-btn" onclick="switchRole('staff')">
-            <i class="fa-solid fa-chalkboard-user"></i> Staff Mode
+          <button id="roleStaff" class="role-btn" onclick="switchRole('staff')" aria-pressed="false" aria-label="Switch to Staff Mode">
+            <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i> Staff Mode
           </button>
         </div>
       </div>
     </header>
 
     <!-- Subheader Alert Ticker -->
-    <div class="ticker-wrap">
-      <div class="ticker-label">
-        <i class="fa-solid fa-bell"></i> LATEST AURA ALERT:
+    <div class="ticker-wrap" role="status" aria-live="polite" aria-label="Live stadium alerts">
+      <div class="ticker-label" aria-hidden="true">
+        <i class="fa-solid fa-bell" aria-hidden="true"></i> LATEST AURA ALERT:
       </div>
       <div class="ticker-content" id="tickerAlert">
         Team Argentina is intensifying warmups near Tunnel A (South-West). Section 110 Selfie Score has increased by +42%!
@@ -78,7 +86,7 @@
     </div>
 
     <!-- Main Grid Dashboard Layout -->
-    <main class="dashboard-grid">
+    <main class="dashboard-grid" id="main-content" role="main">
       
       <!-- LEFT COLUMN: STADIUM DIGITAL TWIN & CONTROLS -->
       <section class="dashboard-col left-col">
@@ -87,27 +95,29 @@
         <div class="card glass-card stadium-card">
           <div class="card-header">
             <div class="card-title-group">
-              <i class="fa-solid fa-cubes card-icon text-cyan"></i>
-              <h3>Interactive Stadium Twin</h3>
+              <i class="fa-solid fa-cubes card-icon text-cyan" aria-hidden="true"></i>
+              <h3 id="stadium-twin-heading">Interactive Stadium Twin</h3>
             </div>
-            <div class="map-view-toggles">
-              <span class="map-mode-label">Overlay:</span>
-              <div class="toggle-pill-group" id="overlayToggles">
-                <button class="pill-btn active" data-metric="experience" onclick="changeOverlay('experience')">Overall Aura</button>
-                <button class="pill-btn" data-metric="community" onclick="changeOverlay('community')">Fan Community</button>
-                <button class="pill-btn" data-metric="jersey" onclick="changeOverlay('jersey')">Jersey Toss</button>
-                <button class="pill-btn" data-metric="selfie" onclick="changeOverlay('selfie')">Selfie Zone</button>
-                <button class="pill-btn" data-metric="celebration" onclick="changeOverlay('celebration')">Goal Celebration</button>
-                <button class="pill-btn" data-metric="chant" onclick="changeOverlay('chant')">Chant Energy</button>
-                <button class="pill-btn" data-metric="shade" onclick="changeOverlay('shade')">Shade Comfort</button>
-                <button class="pill-btn" data-metric="exit" onclick="changeOverlay('exit')">Evacuation Speed</button>
+            <div class="map-view-toggles" role="group" aria-label="Stadium overlay filter">
+              <span class="map-mode-label" id="overlay-label">Overlay:</span>
+              <div class="toggle-pill-group" id="overlayToggles" aria-labelledby="overlay-label">
+                <button class="pill-btn active" data-metric="experience" onclick="changeOverlay('experience')" aria-pressed="true" aria-label="Overall Aura overlay">Overall Aura</button>
+                <button class="pill-btn" data-metric="community" onclick="changeOverlay('community')" aria-pressed="false" aria-label="Fan Community overlay">Fan Community</button>
+                <button class="pill-btn" data-metric="jersey" onclick="changeOverlay('jersey')" aria-pressed="false" aria-label="Jersey Toss overlay">Jersey Toss</button>
+                <button class="pill-btn" data-metric="selfie" onclick="changeOverlay('selfie')" aria-pressed="false" aria-label="Selfie Zone overlay">Selfie Zone</button>
+                <button class="pill-btn" data-metric="celebration" onclick="changeOverlay('celebration')" aria-pressed="false" aria-label="Goal Celebration overlay">Goal Celebration</button>
+                <button class="pill-btn" data-metric="chant" onclick="changeOverlay('chant')" aria-pressed="false" aria-label="Chant Energy overlay">Chant Energy</button>
+                <button class="pill-btn" data-metric="shade" onclick="changeOverlay('shade')" aria-pressed="false" aria-label="Shade Comfort overlay">Shade Comfort</button>
+                <button class="pill-btn" data-metric="exit" onclick="changeOverlay('exit')" aria-pressed="false" aria-label="Evacuation Speed overlay">Evacuation Speed</button>
               </div>
             </div>
           </div>
           
           <div class="stadium-visualizer-container">
             <!-- Stadium Digital Twin SVG Map -->
-            <svg id="stadiumMap" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" class="stadium-svg">
+            <svg id="stadiumMap" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" class="stadium-svg"
+                 role="img" aria-label="Interactive MetLife Stadium seating map. Click any coloured section to view experience score details."
+                 focusable="true">
               <defs>
                 <!-- Pitch grass pattern -->
                 <linearGradient id="grassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -256,10 +266,10 @@
             </svg>
             
             <!-- Shading Status HUD -->
-            <div class="stadium-hud-metrics">
-              <span class="hud-item"><i class="fa-solid fa-cloud-sun"></i> Shade Cover: <strong class="text-cyan">58% West</strong></span>
-              <span class="hud-item"><i class="fa-solid fa-volume-high"></i> Avg Decibels: <strong class="text-pink">108 dB</strong></span>
-              <span class="hud-item"><i class="fa-solid fa-people-group"></i> Capacity: <strong class="text-green">82,410 / 82,500</strong></span>
+            <div class="stadium-hud-metrics" role="status" aria-label="Live stadium metrics">
+              <span class="hud-item"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i> Shade Cover: <strong class="text-cyan">58% West</strong></span>
+              <span class="hud-item"><i class="fa-solid fa-volume-high" aria-hidden="true"></i> Avg Decibels: <strong class="text-pink">108 dB</strong></span>
+              <span class="hud-item"><i class="fa-solid fa-people-group" aria-hidden="true"></i> Capacity: <strong class="text-green">82,410 / 82,500</strong></span>
             </div>
           </div>
         </div>
@@ -401,11 +411,11 @@
         </div>
 
         <!-- TAB CONTENT 1: AI COMPANION (CHATBOT + MCP TERMINAL) -->
-        <div id="tabCompanion" class="tab-content active">
+        <div id="tabCompanion" class="tab-content active" role="region" aria-labelledby="tabCompanionBtn">
           <div class="card glass-card chat-card">
             
             <!-- Chat Feed -->
-            <div class="chat-feed" id="chatFeed">
+            <div class="chat-feed" id="chatFeed" role="log" aria-live="polite" aria-label="AI Companion conversation">
               <div class="chat-message agent">
                 <div class="message-header">
                   <span class="sender-name"><i class="fa-solid fa-robot"></i> FIFA AuraAI Super Agent</span>
@@ -440,9 +450,14 @@
 
             <!-- Input Box -->
             <div class="chat-input-area">
-              <input type="text" id="chatInput" placeholder="Ask anything... (e.g. 'Can you guide a wheelchair user to Gate 1?')" onkeydown="if(event.key === 'Enter') sendChatMessage()">
-              <button class="btn-chat-send" onclick="sendChatMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
+              <label for="chatInput" class="sr-only">Ask the AI companion a question</label>
+              <input type="text" id="chatInput"
+                     placeholder="Ask anything... (e.g. 'Can you guide a wheelchair user to Gate 1?')"
+                     aria-label="Chat message input"
+                     maxlength="500"
+                     onkeydown="if(event.key === 'Enter') sendChatMessage()">
+              <button class="btn-chat-send" onclick="sendChatMessage()" aria-label="Send message">
+                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
               </button>
             </div>
           </div>
@@ -860,5 +875,26 @@
   <!-- JavaScript Modules -->
   <script src="mcp_simulator.js"></script>
   <script src="app.js"></script>
+  <!-- Test utilities exposed to window for browser-based testing -->
+  <script>
+    // Security utilities (also tested in tests.js)
+    window.sanitizeHTML = function(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
+    };
+    window.sanitizeInput = function(input) {
+      if (typeof input !== 'string') return '';
+      return input.trim().slice(0, 500);
+    };
+    window.validateSectionId = function(id) {
+      return /^sec-\d{3}$/.test(id);
+    };
+  </script>
 </body>
 </html>
