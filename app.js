@@ -1,53 +1,8 @@
 // FIFA AuraAI - Main Application Logic
 // Handles state, SVG map rendering, YOLO Canvas simulation, Chat Concierge, and Fan memory generation.
 
-// ─── Security: HTML sanitizer (mirrors tests.js) ─────────────────────────────
-function sanitizeHTML(str) {
-  if (typeof str !== 'string') return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
-}
-function sanitizeInput(input) {
-  if (typeof input !== 'string') return '';
-  return input.trim().slice(0, 500);
-}
-function validateSectionId(id) {
-  return /^sec-\d{3}$/.test(id);
-}
-
-// ─── Efficiency: Debounce & Memoize ──────────────────────────────────────────
-function debounce(fn, wait) {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), wait);
-  };
-}
-
-function memoize(fn) {
-  const cache = new Map();
-  return function (...args) {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) return cache.get(key);
-    const result = fn.apply(this, args);
-    cache.set(key, result);
-    return result;
-  };
-}
-
-// Memoized experience score computation - avoids re-calculation on repeated access
-const computeExperienceScore = memoize(function(data) {
-  if (!data || typeof data !== 'object') return 0;
-  const weights = { overallAura: 0.40, selfieScore: 0.15, jerseyProb: 0.15, chantEnergy: 0.15, shadeComfort: 0.10, exitEvac: 0.05 };
-  return Math.round(
-    Object.entries(weights).reduce((total, [key, weight]) => total + (data[key] || 0) * weight, 0)
-  );
-});
+// ─── Security & Utils: Shared Utility Module ─────────────────────────────────
+const { sanitizeHTML, sanitizeInput, validateSectionId, debounce, memoize, computeExperienceScore } = window.utils || {};
 
 // Global App State
 const state = {
@@ -83,6 +38,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initGameClock();
   applyOverlayColors();
   setupSVGEventHandlers();
+  setupDOMEventListeners();
   
   // Set initial labels
   const mySeatLabelEl = document.getElementById('mySeatLabel');
@@ -104,6 +60,111 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.activeElement.click(); }
   });
 });
+
+function setupDOMEventListeners() {
+  // 1. Role selectors
+  document.getElementById('roleFan')?.addEventListener('click', () => switchRole('fan'));
+  document.getElementById('roleStaff')?.addEventListener('click', () => switchRole('staff'));
+
+  // 2. Overlay toggles
+  document.querySelectorAll('#overlayToggles .pill-btn').forEach(btn => {
+    const metric = btn.getAttribute('data-metric');
+    if (metric) {
+      btn.addEventListener('click', () => changeOverlay(metric));
+    }
+  });
+
+  // 3. Static seat upgrade button in details panel
+  document.getElementById('btnUpgradeSeat')?.addEventListener('click', () => {
+    if (state.selectedSection) {
+      initiateSeatUpgrade(state.selectedSection);
+    }
+  });
+
+  // 4. Tab navigation
+  document.getElementById('tabCompanionBtn')?.addEventListener('click', () => switchTab('companion'));
+  document.getElementById('tabMarketBtn')?.addEventListener('click', () => switchTab('market'));
+  document.getElementById('tabOpsBtn')?.addEventListener('click', () => switchTab('ops'));
+  document.getElementById('tabMemoryBtn')?.addEventListener('click', () => switchTab('memory'));
+
+  // 5. Quick action chat pills
+  document.querySelectorAll('#quickPillsList .pill-chat-btn').forEach(btn => {
+    const query = btn.getAttribute('data-query');
+    if (query) {
+      btn.addEventListener('click', () => askQuickQuestion(query));
+    }
+  });
+
+  // 6. Chat input and send button
+  const chatInput = document.getElementById('chatInput');
+  chatInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  });
+  document.querySelector('.btn-chat-send')?.addEventListener('click', () => {
+    sendChatMessage();
+  });
+
+  // 7. Marketplace cards and upgrade buttons
+  setupMarketplaceCardListeners();
+
+  // 8. Manual simulation triggers
+  document.querySelectorAll('.btn-grid-simulate button').forEach(btn => {
+    const trigger = btn.getAttribute('data-trigger');
+    if (trigger) {
+      btn.addEventListener('click', () => triggerSimulatedIncident(trigger));
+    }
+  });
+
+  // 9. Dispatch action buttons
+  setupDispatchButtonListeners();
+
+  // 10. Fan Memory Generator actions
+  document.getElementById('btnGenerateMemory')?.addEventListener('click', generateFanMemoryCard);
+  document.getElementById('btnResetMemory')?.addEventListener('click', resetMemoryForm);
+  document.getElementById('btnShareMemory')?.addEventListener('click', simulateShare);
+
+  // 11. Modal Close / Cancel / Confirm
+  document.querySelectorAll('.modal-close, #btnCancelUpgrade').forEach(el => {
+    el.addEventListener('click', closeCheckoutModal);
+  });
+  document.getElementById('btnConfirmUpgrade')?.addEventListener('click', completeSeatUpgrade);
+}
+
+function setupMarketplaceCardListeners() {
+  document.querySelectorAll('#upgradeList .upgrade-card').forEach(card => {
+    const secId = card.getAttribute('data-sec');
+    const cost = parseFloat(card.getAttribute('data-cost'));
+    const label = card.getAttribute('data-label');
+    
+    if (secId) {
+      card.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') {
+          selectSectionFromMarket(secId);
+        }
+      });
+      
+      const btn = card.querySelector('button');
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          initiateSeatUpgrade(secId, cost, label);
+        });
+      }
+    }
+  });
+}
+
+function setupDispatchButtonListeners() {
+  document.querySelectorAll('#opsDispatchAlerts button').forEach(btn => {
+    const incident = btn.getAttribute('data-incident');
+    const desc = btn.getAttribute('data-desc');
+    if (incident && desc) {
+      btn.addEventListener('click', () => resolveDispatch(incident, desc));
+    }
+  });
+}
 
 // 1. Live Match Clock Simulator
 function initGameClock() {
@@ -805,6 +866,9 @@ function updateLiveMarketplaceForGoal() {
   const alertCard = document.createElement('div');
   alertCard.className = 'upgrade-card';
   alertCard.style.borderColor = 'var(--danger)';
+  alertCard.setAttribute('data-sec', 'sec-121');
+  alertCard.setAttribute('data-cost', '20');
+  alertCard.setAttribute('data-label', 'Section 121');
   alertCard.innerHTML = `
     <div class="upgrade-card-header">
       <div>
@@ -824,8 +888,23 @@ function updateLiveMarketplaceForGoal() {
         <strong class="text-gold">$20.00</strong>
       </div>
     </div>
-    <button class="btn btn-sm btn-danger" onclick="initiateSeatUpgrade('sec-121', 20, 'Section 121')">Grab Live Seat</button>
+    <button class="btn btn-sm btn-danger">Grab Live Seat</button>
   `;
+
+  // Attach dynamic event listeners to prevent inline script execution
+  alertCard.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'BUTTON') {
+      selectSectionFromMarket('sec-121');
+    }
+  });
+  
+  const btn = alertCard.querySelector('button');
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      initiateSeatUpgrade('sec-121', 20, 'Section 121');
+    });
+  }
   
   upList.insertBefore(alertCard, upList.firstChild);
 }

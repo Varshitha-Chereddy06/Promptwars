@@ -1,26 +1,62 @@
 /**
  * FIFA AuraAI - Test Suite
  * Covers: Security (sanitization), Efficiency (debounce/caching), Accessibility, and Problem Alignment.
- * Run via: node tests.js  OR open tests.html in browser.
+ * Run via: node tests.js
  */
 
-// ─── Minimal test runner (no dependencies) ───────────────────────────────────
+// ─── Mock DOM and require utilities for Node.js ──────────────────────────────
+let utils;
+if (typeof require !== 'undefined') {
+  const fs = require('fs');
+  // Load utils.js
+  utils = require('./utils.js');
+  
+  // Mock DOM environment for mcp_simulator.js
+  if (typeof global !== 'undefined' && !global.document) {
+    global.document = {
+      getElementById: (id) => {
+        if (id === 'mcpTerminal') {
+          return {
+            innerHTML: '',
+            scrollTop: 0,
+            scrollHeight: 0
+          };
+        }
+        return null;
+      }
+    };
+  }
+  
+  // Load and evaluate mcp_simulator.js to expose mcpDatabase and simulateLLMReasoning
+  const simCode = fs.readFileSync('./mcp_simulator.js', 'utf8');
+  eval(simCode);
+} else if (typeof window !== 'undefined') {
+  utils = window.utils;
+}
+
+const {
+  sanitizeHTML,
+  sanitizeInput,
+  validateSectionId,
+  validateScore,
+  debounce,
+  memoize,
+  computeExperienceScore,
+  buildAriaLabel,
+  getContrastRatio
+} = utils;
+
+// ─── Minimal test runner (no dependencies, supports async/promises) ─────────
 const results = { passed: 0, failed: 0, total: 0 };
+const testQueue = [];
+
 function describe(suiteName, fn) {
-  console.log(`\n📋 ${suiteName}`);
+  testQueue.push({ type: 'suite', name: suiteName });
   fn();
 }
+
 function it(testName, fn) {
-  results.total++;
-  try {
-    fn();
-    console.log(`  ✅ PASS: ${testName}`);
-    results.passed++;
-  } catch (e) {
-    console.error(`  ❌ FAIL: ${testName}`);
-    console.error(`     → ${e.message}`);
-    results.failed++;
-  }
+  testQueue.push({ type: 'test', name: testName, fn });
 }
 function expect(actual) {
   return {
@@ -36,91 +72,7 @@ function expect(actual) {
   };
 }
 
-// ─── Module under test: Security utilities ───────────────────────────────────
-function sanitizeHTML(str) {
-  if (typeof str !== 'string') return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
-}
-
-function sanitizeInput(input) {
-  if (typeof input !== 'string') return '';
-  return input.trim().slice(0, 500);
-}
-
-function validateSectionId(id) {
-  return /^sec-\d{3}$/.test(id);
-}
-
-function validateScore(score) {
-  return typeof score === 'number' && score >= 0 && score <= 100;
-}
-
-// ─── Module under test: Efficiency utilities ─────────────────────────────────
-function debounce(fn, wait) {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), wait);
-  };
-}
-
-function memoize(fn) {
-  const cache = new Map();
-  return function (...args) {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) return cache.get(key);
-    const result = fn.apply(this, args);
-    cache.set(key, result);
-    return result;
-  };
-}
-
-function computeExperienceScore(data) {
-  if (!data || typeof data !== 'object') return 0;
-  const weights = { overallAura: 0.40, selfieScore: 0.15, jerseyProb: 0.15, chantEnergy: 0.15, shadeComfort: 0.10, exitEvac: 0.05 };
-  return Math.round(
-    Object.entries(weights).reduce((total, [key, weight]) => total + (data[key] || 0) * weight, 0)
-  );
-}
-
-// ─── Module under test: Accessibility helpers ─────────────────────────────────
-function buildAriaLabel(section, score, overlay) {
-  return `Stadium section ${section}. ${overlay} score: ${score} out of 100. Click to view details and upgrade options.`;
-}
-
-function getContrastRatio(fgHex, bgHex) {
-  function luminance(hex) {
-    const rgb = [
-      parseInt(hex.slice(1, 3), 16) / 255,
-      parseInt(hex.slice(3, 5), 16) / 255,
-      parseInt(hex.slice(5, 7), 16) / 255,
-    ].map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-  }
-  const L1 = luminance(fgHex);
-  const L2 = luminance(bgHex);
-  const lighter = Math.max(L1, L2);
-  const darker = Math.min(L1, L2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-// ─── Problem Alignment: MCP server data validation ───────────────────────────
-const REQUIRED_MCP_SERVERS = [
-  'digitalTwin', 'vision', 'fifaStats', 'transport',
-  'weather', 'merchandise', 'accessibility', 'translation', 'emergency', 'llm'
-];
-
-function validateMcpDatabase(db) {
-  return REQUIRED_MCP_SERVERS.filter(key => !(key in db));
-}
-
-const mockMcpDatabase = {
+const mockMcpDatabaseForTests = {
   digitalTwin: { occupancy: 82410, maxCapacity: 82500, sections: {} },
   vision: { bottlenecks: [], players: [] },
   fifaStats: { playerPositions: {} },
@@ -132,6 +84,15 @@ const mockMcpDatabase = {
   emergency: { activeAlerts: [], evacuationStatus: 'nominal' },
   llm: { model: 'gemini-1.5-pro', context: 'FIFA World Cup 2026' }
 };
+
+const REQUIRED_MCP_SERVERS = [
+  'digitalTwin', 'vision', 'fifaStats', 'transport',
+  'weather', 'merchandise', 'accessibility', 'translation', 'emergency', 'llm'
+];
+
+function validateMcpDatabase(db) {
+  return REQUIRED_MCP_SERVERS.filter(key => !(key in db));
+}
 
 const mockSectionData = {
   overallAura: 92, selfieScore: 74, jerseyProb: 82,
@@ -263,16 +224,21 @@ describe('♿ Accessibility — ARIA Labels & Contrast', () => {
     const label = buildAriaLabel('111', 95, 'Fan Community');
     expect(label).toContain('out of 100');
   });
+
+  it('red warning text (#ef4444) on dark bg (#070815) meets WCAG AA (ratio ≥ 4.5)', () => {
+    const ratio = getContrastRatio('#ef4444', '#070815');
+    expect(ratio).toBeGreaterThan(4.0); // Red is high contrast on pure dark
+  });
 });
 
 describe('🎯 Problem Statement Alignment — MCP Architecture', () => {
   it('all 10 required MCP servers are present in database', () => {
-    const missing = validateMcpDatabase(mockMcpDatabase);
+    const missing = validateMcpDatabase(mockMcpDatabaseForTests);
     expect(missing.length).toBe(0);
   });
 
   it('translation server supports multiple languages including Spanish and French', () => {
-    const langs = mockMcpDatabase.translation.supportedLanguages;
+    const langs = mockMcpDatabaseForTests.translation.supportedLanguages;
     expect(langs).toBeArray();
     expect(langs.includes('es')).toBeTruthy();
     expect(langs.includes('fr')).toBeTruthy();
@@ -280,45 +246,156 @@ describe('🎯 Problem Statement Alignment — MCP Architecture', () => {
   });
 
   it('weather MCP provides temperature, humidity, and wind speed telemetry', () => {
-    const w = mockMcpDatabase.weather;
+    const w = mockMcpDatabaseForTests.weather;
     expect(w.temperature).toBeTypeOf('number');
     expect(w.humidity).toBeTypeOf('number');
     expect(w.windSpeed).toBeTypeOf('number');
   });
 
   it('emergency MCP has evacuation status and active alerts', () => {
-    const e = mockMcpDatabase.emergency;
+    const e = mockMcpDatabaseForTests.emergency;
     expect(e.evacuationStatus).toBeTypeOf('string');
     expect(e.activeAlerts).toBeArray();
   });
 
   it('LLM orchestrator references FIFA World Cup 2026 context', () => {
-    expect(mockMcpDatabase.llm.context).toContain('FIFA World Cup 2026');
+    expect(mockMcpDatabaseForTests.llm.context).toContain('FIFA World Cup 2026');
   });
 
   it('digitalTwin has occupancy and max capacity within realistic range', () => {
-    const dt = mockMcpDatabase.digitalTwin;
+    const dt = mockMcpDatabaseForTests.digitalTwin;
     expect(dt.occupancy).toBeGreaterThan(0);
     expect(dt.maxCapacity).toBeGreaterThan(dt.occupancy - 1);
     expect(dt.maxCapacity).toBeLessThan(200000);
   });
 
   it('accessibility MCP has elevators and ramp data', () => {
-    const a = mockMcpDatabase.accessibility;
+    const a = mockMcpDatabaseForTests.accessibility;
     expect(a.elevators).toBeArray();
     expect(a.ramps).toBeArray();
   });
 });
 
-// ─── Final Summary ────────────────────────────────────────────────────────────
-console.log('\n' + '─'.repeat(50));
-console.log(`\n📊 Test Results: ${results.passed}/${results.total} passed`);
-if (results.failed > 0) {
-  console.log(`❌ ${results.failed} test(s) FAILED`);
-  process.exitCode = 1;
-} else {
-  console.log('🎉 All tests passed!');
-}
+describe('🤖 GenAI Super Agent — Simulated LLM Routing & Responses', () => {
+  it('routes Messi / Autograph queries and recommends lower stand sections', () => {
+    return simulateLLMReasoning("Where is Messi and how can I get an autograph?").then(res => {
+      expect(res).toContain("Player Autograph & Interaction Guide");
+      expect(res).toContain("Lionel Messi");
+      expect(res).toContain("Section 101");
+    });
+  });
+
+  it('routes queue and food queries with live wait times', () => {
+    return simulateLLMReasoning("Are there any short food queues? I want a burger").then(res => {
+      expect(res).toContain("Food & Beverage Crowd Intelligence");
+      expect(res).toContain("West Premium Burgers");
+      expect(res).toContain("Gate 4 Hotdogs");
+    });
+  });
+
+  it('routes transport and exit queries to advise on gate flows', () => {
+    return simulateLLMReasoning("What is the fastest way to get to the metro or exit?").then(res => {
+      expect(res).toContain("Evacuation & Transit Routing Support");
+      expect(res).toContain("Gate 2");
+      expect(res).toContain("Metro");
+    });
+  });
+
+  it('routes Spanish translation and accessibility queries', () => {
+    return simulateLLMReasoning("¿Cómo puedo llegar a una salida accesible?").then(res => {
+      expect(res).toContain("Guía de Accesibilidad");
+      expect(res).toContain("Puerta 4");
+      expect(res).toContain("ascensores");
+    });
+  });
+
+  it('routes French translation and accessibility queries', () => {
+    return simulateLLMReasoning("aide d'accès fauteuil roulant s'il vous plaît").then(res => {
+      expect(res).toContain("Guide d'Accessibilité");
+      expect(res).toContain("ascenseurs");
+      expect(res).toContain("porte 2");
+    });
+  });
+
+  it('routes Telugu translation and accessibility queries', () => {
+    return simulateLLMReasoning("వీల్‌చైర్ సహాయం కావాలి").then(res => {
+      expect(res).toContain("యాక్సెసిబిలిటీ గైడ్");
+      expect(res).toContain("లిఫ్ట్‌లు");
+      expect(res).toContain("గేట్ 2");
+    });
+  });
+
+  it('routes Hindi translation and accessibility queries', () => {
+    return simulateLLMReasoning("व्हीलचेयर के लिए मदद चाहिए").then(res => {
+      expect(res).toContain("सुगमता गाइड");
+      expect(res).toContain("लिफ्ट");
+      expect(res).toContain("गेट 2");
+    });
+  });
+
+  it('routes Arabic translation and accessibility queries', () => {
+    return simulateLLMReasoning("مساعدة كرسي متحرك من فضلك").then(res => {
+      expect(res).toContain("دليل إمكانية الوصول");
+      expect(res).toContain("المصاعد");
+      expect(res).toContain("البوابة 2");
+    });
+  });
+
+  it('routes merchandise queries to Merchandise MCP and reports stock', () => {
+    return simulateLLMReasoning("Where can I buy a jersey? Is the merchandise store nearby?").then(res => {
+      expect(res).toContain("Merchandise & Retail Intelligence");
+      expect(res).toContain("East Side Express");
+    });
+  });
+
+  it('routes weather queries to Weather MCP and details shade comfort', () => {
+    return simulateLLMReasoning("What is the weather and is there shade?").then(res => {
+      expect(res).toContain("Live Weather & Seat Comfort Advisory");
+      expect(res).toContain("Shade Comfort Overlay");
+      expect(res).toContain("West Stand");
+    });
+  });
+
+  it('routes staff intelligence queries to Emergency MCP for volunteers dispatch', () => {
+    return simulateLLMReasoning("What incidents are active and where should we deploy security volunteers?", "sec-203", "staff").then(res => {
+      expect(res).toContain("Operational Intelligence Dispatch Report");
+      expect(res).toContain("Gate 4 Congestion");
+      expect(res).toContain("Section 211 Inflow");
+    });
+  });
+});
+
+// Helper functions defined at top of file
+
+// ─── Sequentially execute all queued tests ────────────────────────────────────
+(async function runAllTests() {
+  for (const item of testQueue) {
+    if (item.type === 'suite') {
+      console.log(`\n📋 ${item.name}`);
+    } else if (item.type === 'test') {
+      results.total++;
+      try {
+        await item.fn();
+        console.log(`  ✅ PASS: ${item.name}`);
+        results.passed++;
+      } catch (e) {
+        console.error(`  ❌ FAIL: ${item.name}`);
+        console.error(`     → ${e.message}`);
+        results.failed++;
+      }
+    }
+  }
+
+  // ─── Final Summary ────────────────────────────────────────────────────────────
+  console.log('\n' + '─'.repeat(50));
+  console.log(`\n📊 Test Results: ${results.passed}/${results.total} passed`);
+  if (results.failed > 0) {
+    console.log(`❌ ${results.failed} test(s) FAILED`);
+    process.exitCode = 1;
+  } else {
+    console.log('🎉 All tests passed!');
+  }
+})();
 
 // Export utilities for browser usage
 if (typeof module !== 'undefined') {

@@ -356,15 +356,15 @@ Our real-time routing layer queried the **Transport MCP** and **Digital Twin MCP
 
 **AuraAI Recommendation:** Exit the stadium via **Gate 2** (East side). Walk to the Metro station. This routes you completely around the West Gate congestion, saving you approximately **18 minutes** of waiting.`;
     }
-    // 4. Accessibility / Wheelchair / Spanish
-    else if (lowercaseQuery.includes("wheelchair") || lowercaseQuery.includes("accessibility") || lowercaseQuery.includes("elev") || lowercaseQuery.includes("elevator") || lowercaseQuery.includes("disable") || lowercaseQuery.includes("spanish") || lowercaseQuery.includes("¿cómo")) {
+    // 4. Accessibility / Wheelchair / Translation
+    else if (lowercaseQuery.includes("wheelchair") || lowercaseQuery.includes("accessibility") || lowercaseQuery.includes("elev") || lowercaseQuery.includes("elevator") || lowercaseQuery.includes("disable") || lowercaseQuery.includes("spanish") || lowercaseQuery.includes("¿cómo") || lowercaseQuery.includes("como") || lowercaseQuery.includes("french") || lowercaseQuery.includes("telugu") || lowercaseQuery.includes("hindi") || lowercaseQuery.includes("arabic") || lowercaseQuery.includes("aide") || lowercaseQuery.includes("ayuda") || lowercaseQuery.includes("sahayam") || lowercaseQuery.includes("madad") || lowercaseQuery.includes("musaada") || lowercaseQuery.includes("సహాయం") || lowercaseQuery.includes("వీల్‌చైర్") || lowercaseQuery.includes("मदद") || lowercaseQuery.includes("व्हीलचेयर") || lowercaseQuery.includes("مساعدة") || lowercaseQuery.includes("كرسي") || lowercaseQuery.includes("fauteuil") || lowercaseQuery.includes("roulant") || lowercaseQuery.includes("accès")) {
       logs.push({ server: "Accessibility MCP", tool: "get_accessible_routes(origin: '" + currentSeatId + "')" });
-      logs.push({ server: "Translation MCP", tool: "translate_text(language: 'ES')" });
       
       const routeAdv = mcpDatabase.accessibility.routeAdvisories;
       const standsList = mcpDatabase.accessibility.wheelchairStands.join(", ");
 
       if (lowercaseQuery.includes("spanish") || lowercaseQuery.includes("¿cómo") || lowercaseQuery.includes("como")) {
+        logs.push({ server: "Translation MCP", tool: "translate_text(language: 'ES')" });
         responseText = `### ♿ Guía de Accesibilidad (Español)
 Traducido por **Translation MCP** y verificado con **Accessibility MCP**:
 * **Rutas Accesibles:** Todos los 12 ascensores están en funcionamiento.
@@ -372,6 +372,42 @@ Traducido por **Translation MCP** y verificado con **Accessibility MCP**:
 * **Secciones Accesibles:** Zonas adaptadas en **${standsList}**.
 
 **Recomendación de Ruta:** Si se encuentra en el nivel superior, tome el pasillo accesible hacia el **Ascensor B**. El personal voluntario en la Puerta 2 le guiará directamente a la rampa de salida.`;
+      } else if (lowercaseQuery.includes("french") || lowercaseQuery.includes("aide")) {
+        logs.push({ server: "Translation MCP", tool: "translate_text(language: 'FR')" });
+        responseText = `### ♿ Guide d'Accessibilité (Français)
+Traduit par **Translation MCP** et vérifié par **Accessibility MCP**:
+* **Itinéraires accessibles:** Les 12 ascenseurs sont opérationnels.
+* **Alerte trafic:** L'ascenseur C près de la porte 4 est prioritaire pour les fauteuils roulants (attente: 1 min).
+* **Zones adaptées:** Zones de fauteuils roulants dans **${standsList}**.
+
+**Conseil de navigation:** Empruntez la rampe vers l'ascenseur B. Le flux est plus fluide, offrant un accès direct et confortable vers la porte 2.`;
+      } else if (lowercaseQuery.includes("telugu") || lowercaseQuery.includes("సహాయం")) {
+        logs.push({ server: "Translation MCP", tool: "translate_text(language: 'TE')" });
+        responseText = `### ♿ యాక్సెసిబిలిటీ గైడ్ (తెలుగు)
+**Translation MCP** ద్వారా అనువదించబడింది మరియు **Accessibility MCP** ద్వారా ధృవీకరించబడింది:
+* **అందుబాటులో ఉన్న మార్గాలు:** అన్ని 12 లిఫ్ట్‌లు విజయవంతంగా నడుస్తున్నాయి.
+* **లిఫ్ట్ ప్రాధాన్యత:** గేట్ 4 సమీపంలో ఉన్న ఎలివేటర్ సి వీల్‌చైర్ వినియోగదారులకు ప్రాధాన్యత ఇస్తుంది.
+* **ప్రత్యేక విభాగాలు:** వీల్‌చైర్ సీటింగ్ జోన్లు **${standsList}** లో ఉన్నాయి.
+
+**సలహా:** ఎలివేటర్ బి వైపు ఉన్న ర్యాంప్ తీసుకోండి. గేట్ 2 కు వెళ్లేందుకు ఇది చాలా సులభమైన మరియు తక్కువ రద్దీ ఉన్న మార్గం.`;
+      } else if (lowercaseQuery.includes("hindi") || lowercaseQuery.includes("मदद")) {
+        logs.push({ server: "Translation MCP", tool: "translate_text(language: 'HI')" });
+        responseText = `### ♿ सुगमता गाइड (हिन्दी)
+**Translation MCP** द्वारा अनुवादित और **Accessibility MCP** द्वारा सत्यापित:
+* **सुलभ मार्ग:** सभी 12 लिफ्ट चालू हैं।
+* **लिफ्ट प्राथमिकता:** गेट 4 के पास लिफ्ट सी व्हीलचेयर उपयोगकर्ताओं के लिए प्राथमिकता पर है (प्रतीक्षा समय: 1 मिनट)।
+* **विशेष खंड:** व्हीलचेयर बैठने के क्षेत्र **${standsList}** में सक्रिय हैं।
+
+**सुझाव:** लिफ्ट बी की ओर जाने वाले रैंप का उपयोग करें। यह गेट 2 की ओर जाने का सबसे आसान मार्ग है।`;
+      } else if (lowercaseQuery.includes("arabic") || lowercaseQuery.includes("مساعدة")) {
+        logs.push({ server: "Translation MCP", tool: "translate_text(language: 'AR')" });
+        responseText = `### ♿ دليل إمكانية الوصول (العربية)
+مترجم بواسطة **Translation MCP** ومعتمد من **Accessibility MCP**:
+* **المسارات الميسرة:** جميع المصاعد الـ 12 تعمل بكفاءة.
+* **أولوية المصاعد:** المصعد C بالقرب من البوابة 4 يعطي الأولوية لمستخدمي الكراسي المتحركة (الانتظار: 1 دقيقة).
+* **مناطق مخصصة:** مناطق جلوس الكراسي المتحركة نشطة في **${standsList}**.
+
+**توجيه المسار:** خذ المنحدر المؤدي إلى المصعد B. التدفق أخف بنسبة 50% ويؤدي بسلاسة إلى البوابة 2.`;
       } else {
         responseText = `### ♿ Accessibility & Mobility Guidance
 Queried **Accessibility MCP** and **Digital Twin maps**:
@@ -402,7 +438,7 @@ Queried **Emergency**, **Vision**, and **Digital Twin MCP** telemetry:
 * **Action 1:** Dispatch **2 Accessibility Volunteers** to *Gate 4* to clear the wheelchair lane.
 * **Action 2:** Trigger a crowd re-routing alert on Section 211 digital signage to redirect incoming spectators to Gate 1. Dispatch **4 security volunteers** to manage Section 211 turnstile lines.`;
     }
-    // 5. Fan Community & Sit-Together Grouping query
+    // 6. Fan Community & Sit-Together Grouping query
     else if (lowercaseQuery.includes("together") || lowercaseQuery.includes("community") || lowercaseQuery.includes("group") || lowercaseQuery.includes("sit with") || lowercaseQuery.includes("fan zone") || lowercaseQuery.includes("supporters") || lowercaseQuery.includes("swaps") || lowercaseQuery.includes("match")) {
       logs.push({ server: "Stadium Digital Twin MCP", tool: "get_fan_distribution_zones()" });
       logs.push({ server: "Accessibility MCP", tool: "verify_group_seat_adjacency(quantity: 2, team: 'ARG')" });
@@ -418,6 +454,43 @@ We queried the **Stadium Digital Twin MCP** and mapped fan community densities:
   * **France Fans Swap:** Section 121 has a group seating swap vacancy offering direct sightlines to the French supporter core.
 
 **AuraAI Recommendation:** Upgrade to **Section 111** (if you support Argentina) or **Section 121** (if you support France). Your digital tickets will be updated instantly so you can sit directly with your community wall!`;
+    }
+    // 7. Merchandise query
+    else if (lowercaseQuery.includes("merchandise") || lowercaseQuery.includes("shop") || lowercaseQuery.includes("store") || lowercaseQuery.includes("jersey") || lowercaseQuery.includes("shirt") || lowercaseQuery.includes("buy") || lowercaseQuery.includes("size") || lowercaseQuery.includes("cap") || lowercaseQuery.includes("scarf")) {
+      logs.push({ server: "Merchandise MCP", tool: "get_store_inventory()" });
+      logs.push({ server: "Merchandise MCP", tool: "get_store_wait_times()" });
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_closest_stores(current_seat: '" + currentSeatId + "')" });
+      
+      const invList = Object.entries(mcpDatabase.merchandise.jerseyInventory)
+        .map(([name, count]) => `* **${name}**: ${count} items in stock`).join("\n");
+      
+      responseText = `### 🛍️ Merchandise & Retail Intelligence
+Based on real-time data from **Merchandise MCP** and **Digital Twin MCP**:
+* **Live Stock Status:**
+${invList}
+* **Store Wait Times:**
+  * **East Side Express:** 2 mins wait time (Low Queue).
+  * **West Side Hub:** 12 mins wait time (Busy).
+  * **South Goal Vendor:** 18 mins wait time (Very Busy).
+
+**AuraAI Recommendation:** Since you are in Section 203 (East Stand), your closest outlet is the **East Side Express** (only 2 minutes wait). You can grab a Messi jersey and avoid the crowd surge on the West Side!`;
+    }
+    // 8. Weather query
+    else if (lowercaseQuery.includes("weather") || lowercaseQuery.includes("rain") || lowercaseQuery.includes("sun") || lowercaseQuery.includes("shade") || lowercaseQuery.includes("temperature") || lowercaseQuery.includes("hot") || lowercaseQuery.includes("cold") || lowercaseQuery.includes("wind") || lowercaseQuery.includes("forecast") || lowercaseQuery.includes("lightning")) {
+      logs.push({ server: "Weather MCP", tool: "get_live_weather()" });
+      logs.push({ server: "Stadium Digital Twin MCP", tool: "get_shade_comfort_metrics()" });
+      
+      const w = mcpDatabase.weather;
+      
+      responseText = `### ☀️ Live Weather & Seat Comfort Advisory
+Telemetry from **Weather MCP** and **Stadium Digital Twin MCP** indicates:
+* **Weather Telemetry:** Current temperature is **${w.temp}°C**, humidity is **${w.humidity}**, and wind is **${w.windSpeed}**. Condition: **${w.condition}**.
+* **Shade Comfort Overlay:**
+  * **West Stand (Sections 101, 102, 201):** 90%-95% shade comfort (fully protected).
+  * **East Stand (Sections 103, 104, 203):** 35%-45% shade comfort (exposed to direct solar glare).
+* **Rain Forecast:** Rain probability is ${w.rainChance}. Lightning alerts: **${w.lightningAlert}**.
+
+**AuraAI Recommendation:** If you are experiencing solar glare in Section 203, we recommend upgrading to **Section 101 or 201** on the West Stand, which features maximum roof shade coverage (90%+ comfort).`;
     }
     // Default fallback query
     else {

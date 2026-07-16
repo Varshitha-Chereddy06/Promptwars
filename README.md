@@ -33,8 +33,8 @@ The platform coordinates real-time data across **10 Model Context Protocol (MCP)
 2. **Vision MCP:** Simulates YOLOv11 object detection, computing player locations, crowd bottlenecks, and food vendor queue lengths.
 3. **FIFA Statistics MCP:** Analyzes historical player habits, team celebration heatmaps, and post-match trajectories.
 4. **Transport MCP:** Monitors subway arrival timetables, parking lot capacity, and ride-share ETAs/surge rates.
-5. **Weather MCP:** Collects environmental telemetry (temperature, wind vectors, heat index, and lightning alerts).
-6. **Merchandise MCP:** Manages retail hubs, tracking jersey sizes in stock and storefront queue wait times.
+5. **Weather MCP:** Collects environmental telemetry (temperature, wind vectors, heat index, and lightning alerts). Powers real-time shade comfort advisories and seat relocation recommendations.
+6. **Merchandise MCP:** Manages retail hubs, tracking jersey sizes in stock, storefront queue wait times, and closest store routing from any seat.
 7. **Accessibility MCP:** Tracks elevators, wheelchair ramps, accessible seating zones, and mobility advisories.
 8. **Translation MCP:** Orchestrates real-time multilingual translations (e.g. guiding fans in Telugu, Spanish, French, Arabic, or Hindi).
 9. **Emergency MCP:** Monitors medical reports, safety alarms, and evacuation pathway state.
@@ -55,6 +55,7 @@ Defines the structure of the dashboard layout.
 * **Operations Dashboard Panel:** Displays crowd statistics, active incidents, and a dispatch form.
 * **CCTV YOLO Canvas:** A rendering canvas showing simulated visual bounding boxes.
 * **Fan Memory Generator:** Form and printable template simulating a post-match certificate.
+* **Content Security Policy (CSP):** The `<meta>` CSP header blocks all inline `<script>` execution (`'unsafe-inline'` removed from `script-src`), mitigating reflected and stored XSS attacks.
 
 ### 2. `index.css`
 Declares the visual look and theme system.
@@ -62,37 +63,72 @@ Declares the visual look and theme system.
 * **Glassmorphism Design:** Cards styled with semi-transparent backdrops (`rgba(19, 21, 48, 0.55)`), background blur filters (`backdrop-filter: blur(16px)`), and thin borders (`1px solid rgba(255,255,255,0.08)`).
 * **Dynamic Animations:** Defines keyframes for scanner sweeps, warning border pulses, glowing dot indicators, and modal transitions.
 
-### 3. `mcp_simulator.js`
+### 3. `utils.js`
+Consolidated shared utility module providing security, efficiency, and accessibility helpers.
+* **Security Utilities:** `sanitizeHTML()` (HTML entity escaping), `sanitizeInput()` (trim + max-length cap), `validateSectionId()` (regex whitelist), `validateScore()` (range check).
+* **Efficiency Utilities:** `debounce()` (rate-limiting rapid calls), `memoize()` (caching repeated function calls), `computeExperienceScore()` (weighted seat metric aggregation).
+* **Accessibility Utilities:** `buildAriaLabel()` (screen reader label constructor), `getContrastRatio()` (WCAG luminance contrast calculator).
+* **Dual Export:** Auto-detects Node.js (`module.exports`) vs. browser (`window`) and exposes all functions to either runtime seamlessly.
+
+### 4. `mcp_simulator.js`
 The intelligence layer simulating backend databases and natural reasoning.
-* **Telemetry Data Model:** A complete mock database representing stadium metrics.
-* **LLM Cognition Dispatcher:** Runs a keyword classifier matching user intents. Delays response generation with `setTimeout` to mimic async server queries.
+* **Telemetry Data Model:** A complete mock database representing stadium metrics across all 10 MCP servers.
+* **LLM Cognition Dispatcher:** Runs a keyword classifier matching user intents across 8 distinct query routes: autograph/selfie, food/queue, transport/exit, accessibility/translation (with 5 language outputs), staff operations, fan community, merchandise, and weather.
 * **Terminal Logger:** Appends status strings to the DOM terminal console, printing request payloads.
 
-### 4. `app.js`
+### 5. `app.js`
 Glues all interactive elements and states together.
 * **State Management:** Tracks active role, active overlays, current seat section, match time, and unresolved incidents.
+* **Dynamic Event Binding:** All DOM event listeners are attached programmatically in `setupDOMEventListeners()`, eliminating all inline `onclick`/`onkeydown` handlers for CSP compliance.
 * **Visual Update Sync:** Modifies SVG class states, changes seat card progress bars, and highlights upgrades.
 * **YOLO CCTV Loop:** Runs an animation loop drawing moving dots (fans), bounding boxes (hotspots), and scanlines on the HTML5 Canvas.
 * **Simulated Event Triggers:** Implements triggers for crowd surges, goal celebrations, or rain shifts.
 * **Upgrade Checkout Flow:** Manages modal confirmation parameters and Wallet ticket updates.
 
-### 5. `package.json`
+### 6. `tests.js`
+Automated test suite with 40 passing assertions across 5 categories.
+* **Security Tests (9):** Validates HTML sanitization, XSS prevention, input truncation, section ID whitelisting, and score range validation.
+* **Efficiency Tests (6):** Validates debounce, memoize caching, and weighted experience score computation (including edge cases).
+* **Accessibility Tests (7):** Validates ARIA label generation, WCAG AA/AAA contrast ratios for all UI color pairings.
+* **Problem Alignment Tests (7):** Validates all 10 MCP servers are present, multilingual translation support, weather telemetry types, emergency MCP structures, and LLM context.
+* **GenAI Super Agent Tests (11):** End-to-end routing tests verifying the simulated LLM correctly dispatches queries to the right MCP servers and generates appropriate responses for autographs, food, transport, Spanish/French/Telugu/Hindi/Arabic accessibility translations, merchandise, weather, and staff operations.
+
+### 7. `package.json`
 Hosts serve command definitions for developers to spin up the local server instantly.
+
+---
+
+## 🔒 Security Architecture
+
+The application implements defense-in-depth security:
+* **Content Security Policy (CSP):** Strict CSP meta-tag blocks inline script execution (`script-src 'self'`), preventing XSS injection. All JavaScript is loaded from external files only.
+* **Input Sanitization:** All user-supplied text (chat messages, form inputs) is sanitized via `sanitizeHTML()` before DOM insertion, escaping `<`, `>`, `"`, `'`, `&`, and `/`.
+* **Input Length Capping:** `sanitizeInput()` trims whitespace and caps all inputs to 500 characters maximum.
+* **ID Validation:** Section IDs are validated against a strict regex whitelist (`/^sec-\d{3}$/`) before any database lookup or DOM access.
+* **Safe DOM Manipulation:** User messages use `textContent` where possible; agent messages (trusted internal templates) use controlled markdown parsing.
+* **HTTP Security Headers:** `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 
 ---
 
 ## 🚀 Installation & Local Launch
 
 ### Option 1: Browser Launch (No Install Required)
-Since the application runs entirely client-side using native modern JS, you can double-click **[index.html](file:///c:/Users/Varshitha/OneDrive/Desktop/12345678/index.html)** to launch the platform in your browser.
+Since the application runs entirely client-side using native modern JS, you can double-click **index.html** to launch the platform in your browser.
 
 ### Option 2: Serving Locally (NodeJS)
-1. Open a command terminal in this directory: `c:\Users\Varshitha\OneDrive\Desktop\12345678`
+1. Open a command terminal in this directory.
 2. Launch the server using:
    ```bash
    npm run start
    ```
 3. Open the output port (default: `http://localhost:3000`) in your web browser.
+
+### Running Tests
+Execute the automated test suite:
+```bash
+node tests.js
+```
+Expected output: `📊 Test Results: 40/40 passed` across 5 test suites.
 
 ---
 
@@ -282,7 +318,7 @@ flowchart LR
     I6 --> M3
 
     M1 & M2 & M3 & M4 & M5 & M6 --> E
-    E --> R["computeExperienceScore\nweighted average\nvia app.js"]
+    E --> R["computeExperienceScore\nweighted average\nvia utils.js"]
     R --> D["SVG seat color\nupdated on map overlay"]
 ```
 
@@ -314,6 +350,17 @@ gantt
     Digital Twin MCP → get_gate_flow_metrics()      :c2, 300, 600
     Emergency MCP → get_evacuation_routes()         :c3, 600, 900
     LLM Reasoning & Response                        :c4, 900, 1200
+
+    section Merchandise Query
+    Merchandise MCP → get_store_inventory()         :f1, 0, 300
+    Merchandise MCP → get_store_wait_times()        :f2, 300, 600
+    Digital Twin MCP → get_closest_stores()         :f3, 600, 900
+    LLM Reasoning & Response                        :f4, 900, 1200
+
+    section Weather Query
+    Weather MCP → get_live_weather()                :g1, 0, 300
+    Digital Twin MCP → get_shade_comfort_metrics()  :g2, 300, 600
+    LLM Reasoning & Response                        :g3, 600, 900
 
     section Fan Community Query
     Digital Twin MCP → get_fan_distribution_zones() :d1, 0, 300
@@ -365,3 +412,17 @@ gantt
 4. Select Section 111 on the map or click **Sit with Community** on the upgrade card. Confirm and pay.
 5. Check your seat details again—your community density indicator now reads **Albiceleste Heart (95% Argentina Supporters)**!
 6. Generate a certificate under the **Fan Memory** tab. Note that the system automatically shifts the narrative to match the Albiceleste supporter crowd context.
+
+### Scenario E: Merchandise Shopping (Fan Mode)
+1. Ask the AI Chat: *"Where can I buy a jersey?"*
+2. Watch the **Merchandise MCP** query `get_store_inventory()` and `get_store_wait_times()` in the MCP Log Console.
+3. The AI recommends the **East Side Express** store (only 2-minute wait) over the busy South Goal Vendor (18-minute wait).
+
+### Scenario F: Multilingual Accessibility Assistance
+1. Ask the AI Chat in any supported language:
+   * Spanish: *"¿Cómo puedo llegar a una salida accesible?"*
+   * French: *"aide d'accès fauteuil roulant"*
+   * Hindi: *"व्हीलचेयर के लिए मदद चाहिए"*
+   * Telugu: *"వీల్‌చైర్ సహాయం కావాలి"*
+   * Arabic: *"مساعدة كرسي متحرك من فضلك"*
+2. Watch the **Translation MCP** and **Accessibility MCP** return localized routing guidance in the user's language.

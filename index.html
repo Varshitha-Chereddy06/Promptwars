@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Content Security Policy: blocks inline XSS, limits resource origins -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://flagcdn.com; connect-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://flagcdn.com; connect-src 'self';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
   <title>FIFA AuraAI - Experience Intelligence Engine</title>
@@ -65,10 +65,10 @@
       <!-- User Role Mode Selection -->
       <div class="role-selector-container">
         <div class="role-selector" role="group" aria-label="User role selection">
-          <button id="roleFan" class="role-btn active" onclick="switchRole('fan')" aria-pressed="true" aria-label="Switch to Fan Mode">
+          <button id="roleFan" class="role-btn active" aria-pressed="true" aria-label="Switch to Fan Mode">
             <i class="fa-solid fa-user-astronaut" aria-hidden="true"></i> Fan Mode
           </button>
-          <button id="roleStaff" class="role-btn" onclick="switchRole('staff')" aria-pressed="false" aria-label="Switch to Staff Mode">
+          <button id="roleStaff" class="role-btn" aria-pressed="false" aria-label="Switch to Staff Mode">
             <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i> Staff Mode
           </button>
         </div>
@@ -101,14 +101,14 @@
             <div class="map-view-toggles" role="group" aria-label="Stadium overlay filter">
               <span class="map-mode-label" id="overlay-label">Overlay:</span>
               <div class="toggle-pill-group" id="overlayToggles" aria-labelledby="overlay-label">
-                <button class="pill-btn active" data-metric="experience" onclick="changeOverlay('experience')" aria-pressed="true" aria-label="Overall Aura overlay">Overall Aura</button>
-                <button class="pill-btn" data-metric="community" onclick="changeOverlay('community')" aria-pressed="false" aria-label="Fan Community overlay">Fan Community</button>
-                <button class="pill-btn" data-metric="jersey" onclick="changeOverlay('jersey')" aria-pressed="false" aria-label="Jersey Toss overlay">Jersey Toss</button>
-                <button class="pill-btn" data-metric="selfie" onclick="changeOverlay('selfie')" aria-pressed="false" aria-label="Selfie Zone overlay">Selfie Zone</button>
-                <button class="pill-btn" data-metric="celebration" onclick="changeOverlay('celebration')" aria-pressed="false" aria-label="Goal Celebration overlay">Goal Celebration</button>
-                <button class="pill-btn" data-metric="chant" onclick="changeOverlay('chant')" aria-pressed="false" aria-label="Chant Energy overlay">Chant Energy</button>
-                <button class="pill-btn" data-metric="shade" onclick="changeOverlay('shade')" aria-pressed="false" aria-label="Shade Comfort overlay">Shade Comfort</button>
-                <button class="pill-btn" data-metric="exit" onclick="changeOverlay('exit')" aria-pressed="false" aria-label="Evacuation Speed overlay">Evacuation Speed</button>
+                <button class="pill-btn active" data-metric="experience" aria-pressed="true" aria-label="Overall Aura overlay">Overall Aura</button>
+                <button class="pill-btn" data-metric="community" aria-pressed="false" aria-label="Fan Community overlay">Fan Community</button>
+                <button class="pill-btn" data-metric="jersey" aria-pressed="false" aria-label="Jersey Toss overlay">Jersey Toss</button>
+                <button class="pill-btn" data-metric="selfie" aria-pressed="false" aria-label="Selfie Zone overlay">Selfie Zone</button>
+                <button class="pill-btn" data-metric="celebration" aria-pressed="false" aria-label="Goal Celebration overlay">Goal Celebration</button>
+                <button class="pill-btn" data-metric="chant" aria-pressed="false" aria-label="Chant Energy overlay">Chant Energy</button>
+                <button class="pill-btn" data-metric="shade" aria-pressed="false" aria-label="Shade Comfort overlay">Shade Comfort</button>
+                <button class="pill-btn" data-metric="exit" aria-pressed="false" aria-label="Evacuation Speed overlay">Evacuation Speed</button>
               </div>
             </div>
           </div>
@@ -380,7 +380,7 @@
                 <div class="price-justification" id="priceDelta"><i class="fa-solid fa-arrow-trend-up"></i> +$65 (due to high live aura match score)</div>
               </div>
               <div class="upgrade-action-wrapper" id="upgradeBtnWrapper">
-                <button class="btn btn-primary" onclick="initiateSeatUpgrade()">
+                <button class="btn btn-primary" id="btnUpgradeSeat">
                   <i class="fa-solid fa-circle-chevron-up"></i> Upgrade to This Seat
                 </button>
               </div>
@@ -395,16 +395,16 @@
         <!-- Tab Navigation for Companion / Marketplace / Operations / Fan Memory -->
         <div class="tabs-container">
           <div class="tabs">
-            <button id="tabCompanionBtn" class="tab-btn active" onclick="switchTab('companion')">
+            <button id="tabCompanionBtn" class="tab-btn active">
               <i class="fa-solid fa-comments"></i> AI Companion
             </button>
-            <button id="tabMarketBtn" class="tab-btn" onclick="switchTab('market')">
+            <button id="tabMarketBtn" class="tab-btn">
               <i class="fa-solid fa-tags"></i> Seat Upgrades
             </button>
-            <button id="tabOpsBtn" class="tab-btn" onclick="switchTab('ops')" style="display: none;">
+            <button id="tabOpsBtn" class="tab-btn" style="display: none;">
               <i class="fa-solid fa-tower-observation"></i> Operations Console
             </button>
-            <button id="tabMemoryBtn" class="tab-btn" onclick="switchTab('memory')">
+            <button id="tabMemoryBtn" class="tab-btn">
               <i class="fa-solid fa-award"></i> Fan Memory
             </button>
           </div>
@@ -433,16 +433,16 @@
             <div class="quick-pills-container">
               <span class="pills-title">Ask AuraAI:</span>
               <div class="pills-scroll" id="quickPillsList">
-                <button class="pill-chat-btn" onclick="askQuickQuestion('Autograph probability for Messi')">
+                <button class="pill-chat-btn" data-query="Autograph probability for Messi">
                   <i class="fa-solid fa-pen-nib"></i> Messi Autograph Probability
                 </button>
-                <button class="pill-chat-btn" onclick="askQuickQuestion('Where are the shortest food queues?')">
+                <button class="pill-chat-btn" data-query="Where are the shortest food queues?">
                   <i class="fa-solid fa-burger"></i> Shortest Food Queues
                 </button>
-                <button class="pill-chat-btn" onclick="askQuickQuestion('Guide me to Exit Gate 4 in Spanish')">
+                <button class="pill-chat-btn" data-query="Guide me to Exit Gate 4 in Spanish">
                   <i class="fa-solid fa-language"></i> Exit Gate 4 Guide (Spanish)
                 </button>
-                <button class="pill-chat-btn" onclick="askQuickQuestion('Which route to the Metro is less crowded?')">
+                <button class="pill-chat-btn" data-query="Which route to the Metro is less crowded?">
                   <i class="fa-solid fa-train"></i> Low Crowd Metro Exit
                 </button>
               </div>
@@ -454,9 +454,8 @@
               <input type="text" id="chatInput"
                      placeholder="Ask anything... (e.g. 'Can you guide a wheelchair user to Gate 1?')"
                      aria-label="Chat message input"
-                     maxlength="500"
-                     onkeydown="if(event.key === 'Enter') sendChatMessage()">
-              <button class="btn-chat-send" onclick="sendChatMessage()" aria-label="Send message">
+                     maxlength="500">
+              <button class="btn-chat-send" aria-label="Send message">
                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
               </button>
             </div>
@@ -510,7 +509,7 @@
 
               <div class="upgrade-list" id="upgradeList">
                 <!-- Community Seating Upgrade Card -->
-                <div class="upgrade-card" onclick="selectSectionFromMarket('sec-111')" style="border: 1px dashed rgba(6, 182, 212, 0.6); background: rgba(6, 182, 212, 0.03);">
+                <div class="upgrade-card" data-sec="sec-111" data-cost="35" data-label="Section 111" style="border: 1px dashed rgba(6, 182, 212, 0.6); background: rgba(6, 182, 212, 0.03);">
                   <div class="upgrade-card-header">
                     <div>
                       <span class="badge badge-cyan"><i class="fa-solid fa-users"></i> Fan Community Swap</span>
@@ -533,11 +532,11 @@
                       <strong class="text-cyan">94/100</strong>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-primary" onclick="initiateSeatUpgrade('sec-111', 35, 'Section 111')">Sit with Community</button>
+                  <button class="btn btn-sm btn-primary">Sit with Community</button>
                 </div>
 
                 <!-- Upgrade Card 1 -->
-                <div class="upgrade-card" onclick="selectSectionFromMarket('sec-110')">
+                <div class="upgrade-card" data-sec="sec-110" data-cost="45" data-label="Section 110">
                   <div class="upgrade-card-header">
                     <div>
                       <span class="badge badge-accent">Celebration Surge</span>
@@ -559,11 +558,11 @@
                       <strong class="text-cyan">88/100</strong>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-outline-primary" onclick="initiateSeatUpgrade('sec-110', 45, 'Section 110')">Select & Upgrade</button>
+                  <button class="btn btn-sm btn-outline-primary">Select & Upgrade</button>
                 </div>
 
                 <!-- Upgrade Card 2 -->
-                <div class="upgrade-card" onclick="selectSectionFromMarket('sec-101')">
+                <div class="upgrade-card" data-sec="sec-101" data-cost="65" data-label="Section 101">
                   <div class="upgrade-card-header">
                     <div>
                       <span class="badge badge-purple">Benchside Autographs</span>
@@ -585,11 +584,11 @@
                       <strong class="text-cyan">92/100</strong>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-outline-primary" onclick="initiateSeatUpgrade('sec-101', 65, 'Section 101')">Select & Upgrade</button>
+                  <button class="btn btn-sm btn-outline-primary">Select & Upgrade</button>
                 </div>
 
                 <!-- Upgrade Card 3 -->
-                <div class="upgrade-card" onclick="selectSectionFromMarket('sec-102')">
+                <div class="upgrade-card" data-sec="sec-102" data-cost="55" data-label="Section 102">
                   <div class="upgrade-card-header">
                     <div>
                       <span class="badge badge-cyan">Broadcast Center</span>
@@ -611,7 +610,7 @@
                       <strong class="text-cyan">87/100</strong>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-outline-primary" onclick="initiateSeatUpgrade('sec-102', 55, 'Section 102')">Select & Upgrade</button>
+                  <button class="btn btn-sm btn-outline-primary">Select & Upgrade</button>
                 </div>
               </div>
             </div>
@@ -678,7 +677,7 @@
                     <strong>Accessibility Incident:</strong> Gate 4 has a line of 3 wheelchair users blocked by high crowd flow.
                     <br><span class="time-elapsed">Detected 1 min ago by Vision MCP</span>
                   </div>
-                  <button class="btn btn-sm btn-primary" onclick="resolveDispatch('gate4', 'Gate 4 Route Assistance')">Dispatch 2 Vols</button>
+                  <button class="btn btn-sm btn-primary" data-incident="gate4" data-desc="Gate 4 Route Assistance">Dispatch 2 Vols</button>
                 </div>
                 
                 <div class="dispatch-alert-item danger" id="surgedAlertItem" style="display: none;">
@@ -687,7 +686,7 @@
                     <strong>Crowd Surge Section 211:</strong> Congestion spikes to 82% at entry turnstiles.
                     <br><span class="time-elapsed">Detected 12s ago by Stadium-Twin-MCP</span>
                   </div>
-                  <button class="btn btn-sm btn-danger" onclick="resolveDispatch('sec211', 'Section 211 Inflow Management')">Deploy 4 Security Vols</button>
+                  <button class="btn btn-sm btn-danger" data-incident="sec211" data-desc="Section 211 Inflow Management">Deploy 4 Security Vols</button>
                 </div>
               </div>
 
@@ -695,13 +694,13 @@
               <div class="manual-dispatch-form">
                 <div class="form-title">Trigger Simulated Stadium Events</div>
                 <div class="btn-grid-simulate">
-                  <button class="btn btn-sm btn-outline-danger" onclick="triggerSimulatedIncident('crowd_surge')">
+                  <button class="btn btn-sm btn-outline-danger" data-trigger="crowd_surge">
                     <i class="fa-solid fa-circle-radiation"></i> Simulate Section 211 Surge
                   </button>
-                  <button class="btn btn-sm btn-outline-yellow" onclick="triggerSimulatedIncident('goal_celebration')">
+                  <button class="btn btn-sm btn-outline-yellow" data-trigger="goal_celebration">
                     <i class="fa-solid fa-futbol"></i> Simulate Team France Goal
                   </button>
-                  <button class="btn btn-sm btn-outline-cyan" onclick="triggerSimulatedIncident('heavy_rain')">
+                  <button class="btn btn-sm btn-outline-cyan" data-trigger="heavy_rain">
                     <i class="fa-solid fa-cloud-showers-heavy"></i> Simulate Rain Shift
                   </button>
                 </div>
@@ -742,7 +741,7 @@
                 </select>
               </div>
 
-              <button class="btn btn-primary btn-block" onclick="generateFanMemoryCard()">
+              <button class="btn btn-primary btn-block" id="btnGenerateMemory">
                 <i class="fa-solid fa-award"></i> Generate My Match Story
               </button>
             </div>
@@ -805,10 +804,10 @@
             </div>
 
             <div class="cert-actions">
-              <button class="btn btn-sm btn-outline-cyan" onclick="resetMemoryForm()">
+              <button class="btn btn-sm btn-outline-cyan" id="btnResetMemory">
                 <i class="fa-solid fa-arrow-left"></i> Create Another
               </button>
-              <button class="btn btn-sm btn-primary" onclick="simulateShare()">
+              <button class="btn btn-sm btn-primary" id="btnShareMemory">
                 <i class="fa-solid fa-share-nodes"></i> Share Certificate
               </button>
             </div>
@@ -824,7 +823,7 @@
     <div class="modal glass-card">
       <div class="modal-header">
         <h3><i class="fa-solid fa-circle-check text-green"></i> Confirm Seat Upgrade</h3>
-        <button class="modal-close" onclick="closeCheckoutModal()">&times;</button>
+        <button class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
         <div class="upgrade-animation-box">
@@ -857,8 +856,8 @@
         <p class="disclaimer-text">By clicking purchase, your digital ticket will be instantly re-issued via FIFA Wallet. The physical seat reservation will update on the Stadium Twin within 1 second.</p>
         
         <div class="modal-footer">
-          <button class="btn btn-outline-cyan" onclick="closeCheckoutModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="completeSeatUpgrade()">
+          <button class="btn btn-outline-cyan" id="btnCancelUpgrade">Cancel</button>
+          <button class="btn btn-primary" id="btnConfirmUpgrade">
             <i class="fa-solid fa-credit-card"></i> Pay & Re-Issue Ticket
           </button>
         </div>
@@ -873,28 +872,8 @@
   </div>
 
   <!-- JavaScript Modules -->
+  <script src="utils.js"></script>
   <script src="mcp_simulator.js"></script>
   <script src="app.js"></script>
-  <!-- Test utilities exposed to window for browser-based testing -->
-  <script>
-    // Security utilities (also tested in tests.js)
-    window.sanitizeHTML = function(str) {
-      if (typeof str !== 'string') return '';
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
-    };
-    window.sanitizeInput = function(input) {
-      if (typeof input !== 'string') return '';
-      return input.trim().slice(0, 500);
-    };
-    window.validateSectionId = function(id) {
-      return /^sec-\d{3}$/.test(id);
-    };
-  </script>
 </body>
 </html>
